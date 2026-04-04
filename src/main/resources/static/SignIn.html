@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leave Approval System</title>
+<style>
+* {
+  margin: 0; padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+  height: 100vh;
+  background: #f5f7fb;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.container {
+  background: #ffffff;
+  padding: 40px;
+  width: 380px;
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+  text-align: center;
+}
+
+h1 { font-size: 26px; color: #333; margin-bottom: 5px; }
+
+.subtitle { color: #888; font-size: 14px; margin-bottom: 30px; }
+
+.form-group { text-align: left; margin-bottom: 20px; }
+
+label { font-size: 14px; color: #555; display: block; margin-bottom: 6px; }
+
+input {
+  width: 100%; padding: 12px;
+  border: 1px solid #ddd; border-radius: 8px;
+  font-size: 14px; outline: none; transition: 0.2s;
+}
+input:focus { border-color: #2f6fed; box-shadow: 0 0 0 2px rgba(47,111,237,0.1); }
+
+.btn {
+  width: 100%; padding: 13px;
+  background: #2f6fed; color: white;
+  border: none; border-radius: 8px;
+  font-size: 16px; cursor: pointer;
+  margin-top: 10px; transition: 0.2s;
+}
+.btn:hover { background: #1e54c7; }
+
+.signup { margin-top: 18px; font-size: 14px; color: #777; }
+.signup a { color: #2f6fed; text-decoration: none; font-weight: 500; }
+.signup a:hover { text-decoration: underline; }
+
+.forgot-link {
+  display: block; text-align: right;
+  font-size: 12.5px; color: #2f6fed;
+  margin-top: 6px; cursor: pointer;
+}
+.forgot-link:hover { text-decoration: underline; }
+
+/* STEPS */
+.step { display: none; }
+.step.active { display: block; }
+
+.step-title { font-size: 18px; font-weight: 700; color: #333; margin-bottom: 6px; }
+.step-sub   { font-size: 13px; color: #888; margin-bottom: 22px; }
+
+.back-link {
+  display: inline-block; font-size: 13px;
+  color: #888; cursor: pointer; margin-bottom: 18px;
+}
+.back-link:hover { color: #2f6fed; }
+
+.msg {
+  font-size: 13px; margin-top: 10px;
+  padding: 10px 14px; border-radius: 8px; display: none;
+}
+.msg.success { background: #dcfce7; color: #16a34a; display: block; }
+.msg.error   { background: #fee2e2; color: #dc2626; display: block; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- STEP 1: LOGIN -->
+  <div class="step active" id="stepLogin">
+    <h1>Approval System</h1>
+    <div class="subtitle">Sign in to your account</div>
+
+    <form id="loginForm">
+      <div class="form-group">
+        <label><b>Email</b></label>
+        <input type="email" id="email" placeholder="Enter your email" required>
+      </div>
+
+      <div class="form-group">
+        <label><b>Password</b></label>
+        <div style="position:relative">
+          <input type="password" id="password" placeholder="Enter your password" required style="padding-right:42px">
+          <button type="button" onclick="toggleEye('password', this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#888">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+        <span class="forgot-link" onclick="showStep('stepForgot')">Forgot Password?</span>
+      </div>
+
+      <button type="submit" class="btn">Sign In</button>
+    </form>
+
+    <div class="signup">
+      Don't have an account? <a href="SignUp.html">Sign Up</a>
+    </div>
+  </div>
+
+  <!-- STEP 2: ENTER EMAIL -->
+  <div class="step" id="stepForgot">
+    <span class="back-link" onclick="showStep('stepLogin')">← Back to Sign In</span>
+    <div class="step-title">Forgot Password?</div>
+    <div class="step-sub">Enter your registered email and we'll send you an OTP.</div>
+
+    <div class="form-group">
+      <label><b>Email</b></label>
+      <input type="email" id="forgotEmail" placeholder="Enter your registered email">
+    </div>
+
+    <button class="btn" onclick="sendOtp()">Send OTP</button>
+    <div class="msg" id="forgotMsg"></div>
+  </div>
+
+  <!-- STEP 3: ENTER OTP -->
+  <div class="step" id="stepOtp">
+    <span class="back-link" onclick="showStep('stepForgot')">← Back</span>
+    <div class="step-title">Enter OTP</div>
+    <div class="step-sub" id="otpSubText">Enter the 6-digit OTP sent to your email.</div>
+
+    <div class="form-group">
+      <label><b>OTP</b></label>
+      <input type="text" id="otpInput" placeholder="Enter 6-digit OTP" maxlength="6">
+    </div>
+
+    <button class="btn" onclick="verifyOtp()">Verify OTP</button>
+    <div class="msg" id="otpMsg"></div>
+  </div>
+
+  <!-- STEP 4: SET NEW PASSWORD -->
+  <div class="step" id="stepNewPwd">
+    <span class="back-link" onclick="showStep('stepOtp')">← Back</span>
+    <div class="step-title">Set New Password</div>
+    <div class="step-sub">Choose a strong new password.</div>
+
+    <div class="form-group">
+      <label><b>New Password</b></label>
+      <div style="position:relative">
+        <input type="password" id="newPwd" placeholder="Enter new password" style="padding-right:42px">
+        <button type="button" onclick="toggleEye('newPwd', this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#888">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label><b>Confirm Password</b></label>
+      <div style="position:relative">
+        <input type="password" id="confirmPwd" placeholder="Re-enter new password" style="padding-right:42px">
+        <button type="button" onclick="toggleEye('confirmPwd', this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#888">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <button class="btn" onclick="resetPassword()">Reset Password</button>
+    <div class="msg" id="newPwdMsg"></div>
+  </div>
+
+</div>
+
+<script src="SignIn.js"></script>
+</body>
+</html>

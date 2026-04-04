@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Leave Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f4f6fb;
+    --surface: #ffffff;
+    --sidebar: #0f1629;
+    --sidebar-hover: #1a2540;
+    --primary: #5b6af5;
+    --primary-light: #eef0ff;
+    --primary-dark: #3d4ed8;
+    --accent: #ff6b6b;
+    --success: #22c55e;
+    --warning: #f59e0b;
+    --info: #06b6d4;
+    --purple: #a855f7;
+    --text: #0f1629;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --radius: 16px;
+    --shadow: 0 2px 20px rgba(91,106,245,0.07);
+    --shadow-md: 0 8px 32px rgba(91,106,245,0.12);
+  }
+
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: 70px;
+    background: var(--sidebar);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 22px 0;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .sidebar-logo {
+    width: 42px; height: 42px;
+    background: linear-gradient(135deg, var(--primary), #818cf8);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    margin-bottom: 22px;
+  }
+
+  .sidebar-icon {
+    width: 46px; height: 46px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+
+  .sidebar-icon:hover, .sidebar-icon.active {
+    background: var(--sidebar-hover);
+    color: #fff;
+  }
+
+  .sidebar-icon.active::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    width: 3px; height: 60%;
+    background: var(--primary);
+    border-radius: 3px 0 0 3px;
+  }
+
+  .sidebar-divider {
+    width: 32px;
+    height: 1px;
+    background: #1e2d4a;
+    margin: 8px 0;
+  }
+
+  .sidebar-bottom { margin-top: auto; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+
+  /* MAIN */
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+  /* TOPBAR */
+  .topbar {
+    background: var(--surface);
+    padding: 0 28px;
+    height: 66px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .topbar-brand { font-size: 16px; font-weight: 800; color: var(--text); letter-spacing: -0.5px; }
+  .topbar-brand span { color: var(--primary); }
+
+  .topbar-actions { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+
+  .icon-btn {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    border: 1.5px solid var(--border);
+    background: transparent;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--muted);
+    transition: all 0.2s;
+    position: relative;
+  }
+  .icon-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+  .notif-badge {
+    position: absolute; top: -4px; right: -4px;
+    background: var(--accent); color: #fff;
+    font-size: 9px; font-weight: 700;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    border: 2px solid var(--surface);
+  }
+
+  .avatar-wrap { display: flex; align-items: center; gap: 9px; cursor: pointer; padding: 4px 10px; border-radius: 12px; border: 1.5px solid var(--border); transition: border-color 0.2s; }
+  .avatar-wrap:hover { border-color: var(--primary); }
+  .avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), #a78bfa);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 700; font-size: 12px;
+  }
+  .avatar-name { font-size: 13px; font-weight: 600; }
+  .avatar-role { font-size: 11px; color: var(--muted); }
+
+  /* NAV TABS */
+  .nav-tabs {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 28px;
+    display: flex; align-items: center;
+    flex-shrink: 0;
+    gap: 2px;
+  }
+
+  .nav-tab {
+    padding: 14px 18px;
+    font-size: 13px; font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 2.5px solid transparent;
+    transition: all 0.2s;
+  }
+  .nav-tab:hover { color: var(--text); }
+  .nav-tab.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 700; }
+
+  .btn-primary {
+    background: var(--primary);
+    color: #fff; border: none;
+    border-radius: 11px;
+    padding: 9px 18px;
+    font-size: 13px; font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex; align-items: center; gap: 6px;
+    margin-left: auto;
+  }
+  .btn-primary:hover { background: var(--primary-dark); box-shadow: 0 4px 16px rgba(91,106,245,0.3); transform: translateY(-1px); }
+
+  /* CONTENT */
+  .content { flex: 1; overflow-y: auto; padding: 24px 28px; display: flex; flex-direction: column; gap: 20px; }
+
+  /* WELCOME BANNER */
+  .welcome-banner {
+    background: linear-gradient(120deg, #1a1f36 0%, #2a3260 60%, #1e2f5c 100%);
+    border-radius: var(--radius);
+    padding: 40px 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+  }
+  .welcome-banner::before {
+    content: '';
+    position: absolute;
+    right: -40px; top: -40px;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(91,106,245,0.3) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  .welcome-banner::after {
+    content: '';
+    position: absolute;
+    right: 100px; bottom: -60px;
+    width: 160px; height: 160px;
+    background: radial-gradient(circle, rgba(168,85,247,0.2) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  .welcome-left { position: relative; z-index: 1; }
+  .welcome-greeting { font-size: 14px; color: #cbd5e1; font-weight: 500; margin-bottom: 6px; }
+  .welcome-name { font-size: 28px; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+  .welcome-sub { font-size: 14px; color: #e2e8f0; margin-top: 6px; font-weight: 500; }
+  .welcome-right { position: relative; z-index: 1; text-align: right; }
+  .welcome-stat { font-size: 48px; font-weight: 800; color: #fff; line-height: 1; }
+  .welcome-stat-label { font-size: 13px; color: #cbd5e1; margin-top: 6px; }
+
+  /* LEAVE CARDS */
+  .leave-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+  }
+
+  .leave-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 18px;
+    box-shadow: var(--shadow);
+    border: 1.5px solid var(--border);
+    display: flex; flex-direction: column; gap: 14px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: default;
+    position: relative;
+    overflow: hidden;
+  }
+  .leave-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+  .leave-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: var(--radius) var(--radius) 0 0;
+  }
+  .leave-card.sick::before    { background: var(--warning); }
+  .leave-card.casual::before  { background: var(--success); }
+  .leave-card.learn::before   { background: var(--primary); }
+  .leave-card.annual::before  { background: var(--purple);  }
+
+  .leave-card-top { display: flex; justify-content: space-between; align-items: flex-start; }
+  .leave-card-icon {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .lc-sick   .leave-card-icon { background: #fef3c7; }
+  .lc-casual .leave-card-icon { background: #dcfce7; }
+  .lc-learn  .leave-card-icon { background: var(--primary-light); }
+  .lc-annual .leave-card-icon { background: #f3e8ff; }
+
+  .leave-card-badge {
+    font-size: 10.5px; font-weight: 700;
+    padding: 3px 8px; border-radius: 20px;
+  }
+  .leave-card-badge.good { background: #dcfce7; color: #16a34a; }
+  .leave-card-badge.low  { background: #fee2e2; color: #dc2626; }
+  .leave-card-badge.ok   { background: #fef3c7; color: #d97706; }
+
+  .leave-card-remaining { font-size: 30px; font-weight: 800; letter-spacing: -1px; line-height: 1; }
+  .leave-card-label     { font-size: 12px; color: var(--muted); font-weight: 500; margin-top: 2px; }
+
+  .progress-wrap { background: var(--bg); border-radius: 20px; height: 5px; overflow: hidden; }
+  .progress-bar  { height: 100%; border-radius: 20px; transition: width 1s ease; }
+
+  .leave-card-footer { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--muted); }
+
+  /* BOTTOM GRID */
+  .bottom-grid { display: grid; grid-template-columns: 1fr 380px; gap: 18px; }
+
+  /* CARD */
+  .card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+    border: 1.5px solid var(--border);
+  }
+
+  .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+  .card-title    { font-size: 14px; font-weight: 700; }
+  .card-subtitle { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  /* TABLE */
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.6px;
+    color: var(--muted);
+    padding: 0 12px 10px;
+    text-align: left;
+    border-bottom: 1.5px solid var(--border);
+  }
+  td {
+    padding: 12px;
+    font-size: 13px;
+    color: var(--text);
+    border-bottom: 1px solid var(--bg);
+    vertical-align: middle;
+  }
+  tr:last-child td { border-bottom: none; }
+  tbody tr { transition: background 0.15s; }
+  tbody tr:hover td { background: #f8faff; }
+
+  .status-chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 10px; border-radius: 20px;
+    font-size: 11.5px; font-weight: 600;
+  }
+  .status-chip::before { content: ''; width: 5px; height: 5px; border-radius: 50%; }
+  .status-pending  { background: #fef9c3; color: #854d0e; }
+  .status-pending::before  { background: #eab308; }
+  .status-approved { background: #dcfce7; color: #15803d; }
+  .status-approved::before { background: #22c55e; }
+  .status-rejected { background: #fee2e2; color: #991b1b; }
+  .status-rejected::before { background: #ef4444; }
+
+  .cancel-btn {
+    background: #fee2e2; color: #dc2626;
+    border: none; border-radius: 7px;
+    padding: 4px 10px; font-size: 11.5px; font-weight: 600;
+    font-family: inherit; cursor: pointer; transition: all 0.2s;
+  }
+  .cancel-btn:hover { background: #fca5a5; }
+
+  /* CALENDAR */
+  .cal-nav-row { display: flex; align-items: center; gap: 10px; }
+  .cal-nav-btn {
+    width: 28px; height: 28px;
+    border-radius: 8px; border: 1.5px solid var(--border);
+    background: transparent; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--muted); transition: all 0.2s;
+  }
+  .cal-nav-btn:hover { border-color: var(--primary); color: var(--primary); }
+  .cal-month-title { font-size: 14px; font-weight: 700; }
+
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+    margin-top: 12px;
+  }
+  .cal-day-header {
+    text-align: center; font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.4px;
+    color: var(--muted); padding: 6px 0;
+  }
+  .cal-day {
+    height: 34px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; cursor: pointer;
+    transition: all 0.15s; color: var(--text);
+    position: relative;
+  }
+  .cal-day:hover:not(.empty) { background: var(--primary-light); color: var(--primary); }
+  .cal-day.empty  { cursor: default; color: var(--border); }
+  .cal-day.today  { background: var(--primary); color: #fff; font-weight: 800; border-radius: 50%; }
+  .cal-day.today:hover { background: var(--primary-dark); }
+
+  .cal-legend { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .cal-legend-item { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--muted); }
+  .cal-legend-dot  { width: 8px; height: 8px; border-radius: 50%; }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(15,22,41,0.5);
+    backdrop-filter: blur(6px);
+    display: none; align-items: center; justify-content: center;
+    z-index: 100;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border-radius: 20px;
+    padding: 28px;
+    width: 460px;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.18);
+    animation: modalIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.94) translateY(10px); }
+    to   { opacity: 1; transform: scale(1)    translateY(0);    }
+  }
+
+  .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
+  .modal-title  { font-size: 18px; font-weight: 800; }
+  .modal-close  {
+    width: 32px; height: 32px; border-radius: 9px;
+    border: 1.5px solid var(--border); background: transparent;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    color: var(--muted); font-size: 15px; transition: all 0.2s;
+  }
+  .modal-close:hover { border-color: var(--accent); color: var(--accent); }
+
+  .form-group  { margin-bottom: 16px; }
+  .form-label  { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 7px; display: block; }
+  .form-control {
+    width: 100%;
+    border: 1.5px solid var(--border);
+    border-radius: 11px;
+    padding: 10px 14px;
+    font-size: 13.5px;
+    font-family: inherit;
+    color: var(--text);
+    background: var(--bg);
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .form-control:focus { border-color: var(--primary); background: #fff; }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .leave-type-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .leave-type-option {
+    border: 1.5px solid var(--border);
+    border-radius: 11px;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex; align-items: center; gap: 9px;
+    font-size: 13px; font-weight: 600;
+  }
+  .leave-type-option:hover    { border-color: var(--primary); background: var(--primary-light); }
+  .leave-type-option.selected { border-color: var(--primary); background: var(--primary-light); color: var(--primary); }
+  .leave-type-option .lto-icon { font-size: 18px; }
+  .leave-type-option .lto-bal  { font-size: 11px; color: var(--muted); font-weight: 500; }
+
+  .modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+  .btn-secondary {
+    background: var(--bg); color: var(--text);
+    border: 1.5px solid var(--border); border-radius: 11px;
+    padding: 10px 20px; font-size: 13px; font-weight: 700;
+    font-family: inherit; cursor: pointer; transition: all 0.2s;
+  }
+  .btn-secondary:hover { border-color: var(--primary); color: var(--primary); }
+
+  .char-count { font-size: 11px; color: var(--muted); text-align: right; margin-top: 4px; }
+
+  /* TOAST */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--text); color: #fff;
+    padding: 13px 20px;
+    border-radius: 14px;
+    font-size: 13.5px; font-weight: 600;
+    display: flex; align-items: center; gap: 10px;
+    transform: translateY(80px); opacity: 0;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 400;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    max-width: 320px;
+  }
+  .toast.show    { transform: translateY(0); opacity: 1; }
+  .toast.success { background: linear-gradient(135deg, #16a34a, #22c55e); }
+  .toast.error   { background: linear-gradient(135deg, #dc2626, #ef4444); }
+  .toast.warning { background: linear-gradient(135deg, #d97706, #f59e0b); }
+  .toast-icon    { font-size: 18px; }
+
+  /* PRIVACY NOTICE */
+  .privacy-notice {
+    background: linear-gradient(135deg, #eff6ff, #f0fdf4);
+    border: 1.5px solid #bfdbfe;
+    border-radius: 12px;
+    padding: 12px 16px;
+    display: flex; align-items: center; gap: 10px;
+    font-size: 12.5px; color: #1e40af; font-weight: 500;
+  }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+  /* EYE BUTTON */
+  .eye-btn {
+    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; cursor: pointer;
+    color: var(--muted); padding: 0;
+    display: flex; align-items: center;
+  }
+
+  /* SETTINGS PANEL */
+  .settings-overlay {
+    position: fixed; inset: 0;
+    background: rgba(15,22,41,0.4);
+    backdrop-filter: blur(4px);
+    z-index: 300;
+    display: none; align-items: flex-end; justify-content: flex-start;
+  }
+  .settings-overlay.open { display: flex; }
+
+  .settings-panel {
+    position: fixed;
+    bottom: 0; left: 70px;
+    width: 360px;
+    background: var(--surface);
+    border-radius: 0 20px 0 0;
+    box-shadow: 0 -4px 40px rgba(91,106,245,0.15);
+    border-top: 1.5px solid var(--border);
+    border-right: 1.5px solid var(--border);
+    overflow: hidden;
+    animation: slideUp 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    max-height: 92vh;
+    display: flex; flex-direction: column;
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(30px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+  }
+
+  .settings-header {
+    padding: 22px 24px 16px;
+    border-bottom: 1.5px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .settings-header-left { display: flex; align-items: center; gap: 12px; }
+  .settings-header-icon {
+    width: 40px; height: 40px;
+    background: var(--primary-light);
+    border-radius: 11px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--primary);
+  }
+  .settings-header-title { font-size: 16px; font-weight: 800; }
+  .settings-header-sub   { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .settings-close {
+    width: 32px; height: 32px;
+    border-radius: 9px; border: 1.5px solid var(--border);
+    background: transparent; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--muted); font-size: 15px; transition: all 0.2s;
+  }
+  .settings-close:hover { border-color: var(--accent); color: var(--accent); }
+
+  .settings-body { overflow-y: auto; flex: 1; padding: 8px 0 16px; }
+
+  .settings-section { padding: 14px 24px 4px; }
+  .settings-section-label {
+    font-size: 10.5px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 1px;
+    color: var(--muted); margin-bottom: 6px;
+  }
+
+  .settings-item {
+    display: flex; align-items: center; gap: 14px;
+    padding: 12px 14px; border-radius: 12px;
+    cursor: pointer; transition: background 0.15s;
+    margin-bottom: 2px;
+  }
+  .settings-item:hover        { background: var(--bg); }
+  .settings-item.danger:hover { background: #fff1f1; }
+
+  .settings-item-icon {
+    width: 38px; height: 38px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px; flex-shrink: 0;
+  }
+  .settings-item-text  { flex: 1; }
+  .settings-item-title { font-size: 13.5px; font-weight: 600; }
+  .settings-item-sub   { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
+  .settings-item-arrow { color: var(--muted); font-size: 14px; }
+  .settings-item.danger .settings-item-title { color: #dc2626; }
+  .settings-item.danger .settings-item-arrow { color: #dc2626; }
+
+  .toggle-wrap { display: flex; align-items: center; }
+  .toggle {
+    width: 40px; height: 22px;
+    background: var(--border); border-radius: 20px;
+    position: relative; cursor: pointer;
+    transition: background 0.2s; flex-shrink: 0;
+    border: none; outline: none;
+  }
+  .toggle.on { background: var(--primary); }
+  .toggle::after {
+    content: ''; position: absolute;
+    top: 3px; left: 3px;
+    width: 16px; height: 16px;
+    background: #fff; border-radius: 50%;
+    transition: transform 0.2s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+  }
+  .toggle.on::after { transform: translateX(18px); }
+
+  .settings-divider { height: 1px; background: var(--border); margin: 8px 24px; }
+
+  .settings-profile-card {
+    margin: 12px 24px 4px;
+    background: linear-gradient(120deg, #1a1f36 0%, #2d3561 100%);
+    border-radius: 14px;
+    padding: 16px 18px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .settings-avatar {
+    width: 48px; height: 48px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), #a78bfa);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 800; font-size: 16px; flex-shrink: 0;
+    border: 2px solid rgba(255,255,255,0.2);
+  }
+  .settings-profile-name  { font-size: 15px; font-weight: 800; color: #fff; }
+  .settings-profile-roll  { font-size: 12px; color: #94a3b8; margin-top: 3px; }
+  .settings-profile-chips { display: flex; gap: 6px; margin-top: 8px; }
+  .settings-profile-chip  {
+    font-size: 10.5px; font-weight: 700;
+    padding: 3px 10px; border-radius: 20px;
+    background: rgba(255,255,255,0.1); color: #cbd5e1;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  /* SUB PANEL */
+  .sub-panel {
+    position: absolute; inset: 0;
+    background: var(--surface);
+    transform: translateX(100%);
+    transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
+    display: flex; flex-direction: column;
+    border-radius: 0 20px 0 0;
+  }
+  .sub-panel.open { transform: translateX(0); }
+  .sub-panel-header {
+    padding: 20px 24px 16px;
+    border-bottom: 1.5px solid var(--border);
+    display: flex; align-items: center; gap: 12px;
+    flex-shrink: 0;
+  }
+  .sub-back {
+    width: 32px; height: 32px; border-radius: 9px;
+    border: 1.5px solid var(--border); background: transparent;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    color: var(--muted); font-size: 16px; transition: all 0.2s;
+  }
+  .sub-back:hover { border-color: var(--primary); color: var(--primary); }
+  .sub-panel-title { font-size: 15px; font-weight: 800; }
+  .sub-panel-body  { flex: 1; overflow-y: auto; padding: 20px 24px; }
+
+  .sub-form-group   { margin-bottom: 18px; }
+  .sub-form-label   { font-size: 11.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; display: block; }
+  .sub-form-control {
+    width: 100%; border: 1.5px solid var(--border); border-radius: 11px;
+    padding: 10px 14px; font-size: 13.5px; font-family: inherit;
+    color: var(--text); background: var(--bg); outline: none;
+    transition: border-color 0.2s;
+  }
+  .sub-form-control:focus    { border-color: var(--primary); background: #fff; }
+  .sub-form-control:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  .notif-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 0; border-bottom: 1px solid var(--bg);
+  }
+  .notif-row:last-child { border-bottom: none; }
+  .notif-row-left  { flex: 1; }
+  .notif-row-title { font-size: 13.5px; font-weight: 600; }
+  .notif-row-sub   { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  /* NOTIFICATION DROPDOWN */
+  .notif-dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 320px;
+    background: var(--surface);
+    border-radius: 16px;
+    box-shadow: 0 12px 40px rgba(15,22,41,0.18);
+    border: 1.5px solid var(--border);
+    z-index: 500;
+    display: none;
+    overflow: hidden;
+    animation: dropIn 0.2s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .notif-dropdown.open { display: block; }
+  @keyframes dropIn {
+    from { opacity: 0; transform: translateY(-8px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0)    scale(1);    }
+  }
+  .notif-dd-header {
+    padding: 14px 16px 10px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1.5px solid var(--border);
+  }
+  .notif-dd-title { font-size: 14px; font-weight: 800; }
+  .notif-dd-clear { font-size: 12px; color: var(--primary); cursor: pointer; font-weight: 600; }
+  .notif-dd-clear:hover { text-decoration: underline; }
+  .notif-dd-list { max-height: 320px; overflow-y: auto; }
+  .notif-dd-item {
+    display: flex; gap: 12px; align-items: flex-start;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--bg);
+    transition: background 0.15s;
+  }
+  .notif-dd-item:last-child { border-bottom: none; }
+  .notif-dd-item:hover { background: #f8faff; }
+  .notif-dd-item.unread { background: var(--primary-light); }
+  .notif-dd-item.unread:hover { background: #e4e8ff; }
+  .notif-dd-icon {
+    width: 36px; height: 36px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+  }
+  .notif-dd-body { flex: 1; }
+  .notif-dd-text { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.4; }
+  .notif-dd-sub  { font-size: 11.5px; color: var(--muted); margin-top: 3px; }
+  .notif-dd-time { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .notif-dd-empty { padding: 32px 16px; text-align: center; color: var(--muted); font-size: 13px; }
+  .notif-dd-empty-icon { font-size: 32px; margin-bottom: 8px; }
+  .notif-dd-footer {
+    padding: 10px 16px;
+    border-top: 1.5px solid var(--border);
+    text-align: center;
+    font-size: 12.5px; color: var(--primary);
+    font-weight: 600; cursor: pointer;
+  }
+  .notif-dd-footer:hover { background: var(--bg); }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">🎓</div>
+  <div class="sidebar-icon active" title="Dashboard">
+    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+  </div>
+  <div class="sidebar-icon" title="My Leaves">
+    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+  </div>
+  <div class="sidebar-divider"></div>
+  <div class="sidebar-icon" title="Notifications">
+    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+  </div>
+  <div class="sidebar-bottom">
+    <div class="sidebar-icon" title="Settings">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div>
+      <div class="topbar-brand">Student<span>Portal</span></div>
+    </div>
+    <div class="topbar-actions">
+      <div style="position:relative">
+        <button class="icon-btn" id="notifBtn" title="Notifications">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="notif-badge" id="notifBadge">0</span>
+        </button>
+        <!-- NOTIFICATION DROPDOWN -->
+        <div class="notif-dropdown" id="notifDropdown">
+          <div class="notif-dd-header">
+            <span class="notif-dd-title">🔔 Notifications</span>
+            <span class="notif-dd-clear" id="notifClearAll">Mark all read</span>
+          </div>
+          <div class="notif-dd-list" id="notifList"></div>
+          <div class="notif-dd-footer" id="notifFooter" style="display:none">View all notifications</div>
+        </div>
+      </div>
+      <div class="avatar-wrap">
+        <div class="avatar"></div>
+        <div>
+          <div class="avatar-name"></div>
+          <div class="avatar-role"></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- TABS -->
+  <div class="nav-tabs">
+    <div class="nav-tab active" data-tab="overview">Overview</div>
+    <div class="nav-tab" data-tab="history">My Leave History</div>
+    <div class="nav-tab" data-tab="calendar">Calendar</div>
+    <button class="btn-primary" id="applyLeaveBtn">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Apply for Leave
+    </button>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content" id="mainContent">
+
+    <!-- WELCOME BANNER -->
+    <div class="welcome-banner">
+      <div class="welcome-left">
+        <div class="welcome-greeting">Welcome,</div>
+        <div class="welcome-name"></div>
+      </div>
+      <div class="welcome-right">
+        <div class="welcome-stat" id="totalRemainingDays">0</div>
+        <div class="welcome-stat-label">Total leave days remaining</div>
+      </div>
+    </div>
+
+    <!-- LEAVE AVAILABILITY -->
+    <div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div>
+          <div style="font-size:15px;font-weight:800">Leave Availability</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">Your personal leave balance for this academic year</div>
+        </div>
+      </div>
+      <div class="leave-grid" id="leaveGrid"></div>
+    </div>
+
+    <!-- PRIVACY NOTICE -->
+    <div class="privacy-notice">
+      <span style="font-size:18px">🔒</span>
+      <span><strong>Privacy Protected:</strong> Your leave records are visible only to you and your assigned faculty advisor. Other students cannot view your leave details.</span>
+    </div>
+
+    <!-- BOTTOM SECTION -->
+    <div class="bottom-grid">
+
+      <!-- MY LEAVE HISTORY -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">My Leave History</div>
+            <div class="card-subtitle">Only your submitted applications</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <select id="filterStatus" style="border:1.5px solid var(--border);border-radius:9px;padding:6px 12px;font-size:12px;font-family:inherit;background:var(--bg);color:var(--text);outline:none;cursor:pointer">
+              <option value="all">All Status</option>
+              <option value="Pending">Pending</option>
+              <option value="Approved">Approved</option>
+              <option value="Rejected">Rejected</option>
+            </select>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Reason</th>
+              <th>Days</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="myLeaveTable"></tbody>
+        </table>
+        <div id="emptyState" style="display:none;text-align:center;padding:30px;color:var(--muted);font-size:13px">
+          <div style="font-size:32px;margin-bottom:8px">📋</div>
+          No leave applications found
+        </div>
+      </div>
+
+      <!-- RIGHT PANEL -->
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div class="card">
+          <div class="card-header" style="margin-bottom:12px">
+            <div>
+              <div class="card-title">Mini Calendar</div>
+              <div class="card-subtitle">Your leave days this month</div>
+            </div>
+            <div class="cal-nav-row">
+              <button class="cal-nav-btn" id="prevMonth">‹</button>
+              <span class="cal-month-title" id="calMonthTitle"></span>
+              <button class="cal-nav-btn" id="nextMonth">›</button>
+            </div>
+          </div>
+          <div class="cal-grid" id="miniCal"></div>
+          <div class="cal-legend">
+            <div class="cal-legend-item"><span class="cal-legend-dot" style="background:var(--warning)"></span>Sick</div>
+            <div class="cal-legend-item"><span class="cal-legend-dot" style="background:var(--success)"></span>Casual</div>
+            <div class="cal-legend-item"><span class="cal-legend-dot" style="background:var(--primary)"></span>Learning</div>
+            <div class="cal-legend-item"><span class="cal-legend-dot" style="background:#ef4444"></span>Holiday</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- APPLY LEAVE MODAL -->
+<div class="modal-overlay" id="leaveModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">✍️ Apply for Leave</div>
+      <button class="modal-close" id="closeModal">✕</button>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Select Leave Type</label>
+      <div class="leave-type-grid" id="leaveTypeGrid"></div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Start Date</label>
+        <input type="date" class="form-control" id="startDate">
+      </div>
+      <div class="form-group">
+        <label class="form-label">End Date</label>
+        <input type="date" class="form-control" id="endDate">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Session</label>
+      <select class="form-control" id="session">
+        <option>Full Day</option>
+        <option>First Half</option>
+        <option>Second Half</option>
+      </select>
+    </div>
+
+    <!-- TEACHER DROPDOWN — fetched from DB -->
+    <div class="form-group">
+      <label class="form-label">Assign Teacher <span style="color:var(--accent)">*</span></label>
+      <select class="form-control" id="teacherSelect">
+        <option value="">— Select a Teacher —</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Reason for Leave</label>
+      <textarea class="form-control" id="reason" rows="3" placeholder="Briefly explain the reason (required)..." maxlength="200"></textarea>
+      <div class="char-count"><span id="charCount">0</span>/200</div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Contact During Leave (optional)</label>
+      <input type="text" class="form-control" id="contact" placeholder="Phone number or email">
+    </div>
+
+    <div style="background:var(--bg);border-radius:10px;padding:11px 14px;font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:8px">
+      <span>📎</span> Application goes to the selected teacher first, then to HOD if needed, then Director. You'll be notified via email.
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" id="cancelLeave">Cancel</button>
+      <button class="btn-primary"   id="submitLeave">Submit Application</button>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS PANEL -->
+<div class="settings-overlay" id="settingsOverlay">
+  <div class="settings-panel" id="settingsPanel">
+
+    <!-- HEADER -->
+    <div class="settings-header">
+      <div class="settings-header-left">
+        <div class="settings-header-icon">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        </div>
+        <div>
+          <div class="settings-header-title">Settings</div>
+          <div class="settings-header-sub">Manage your preferences</div>
+        </div>
+      </div>
+      <button class="settings-close" id="settingsClose">✕</button>
+    </div>
+
+    <!-- BODY -->
+    <div class="settings-body">
+
+      <!-- PROFILE CARD -->
+      <div class="settings-profile-card">
+        <div class="settings-avatar"></div>
+        <div>
+          <div class="settings-profile-name"></div>
+          <div class="settings-profile-roll"></div>
+          <div class="settings-profile-chips">
+            <span class="settings-profile-chip" id="settingsClassChip"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACCOUNT -->
+      <div class="settings-section">
+        <div class="settings-section-label">Account</div>
+
+        <div class="settings-item" id="openProfile">
+          <div class="settings-item-icon" style="background:#eef0ff">👤</div>
+          <div class="settings-item-text">
+            <div class="settings-item-title">My Profile</div>
+            <div class="settings-item-sub">View your academic details</div>
+          </div>
+          <span class="settings-item-arrow">›</span>
+        </div>
+
+        <div class="settings-item" id="openPassword">
+          <div class="settings-item-icon" style="background:#dcfce7">🔒</div>
+          <div class="settings-item-text">
+            <div class="settings-item-title">Change Password</div>
+            <div class="settings-item-sub">Update your login password</div>
+          </div>
+          <span class="settings-item-arrow">›</span>
+        </div>
+      </div>
+
+      <div class="settings-divider"></div>
+
+      <!-- PREFERENCES -->
+      <div class="settings-section">
+        <div class="settings-section-label">Preferences</div>
+
+        <div class="settings-item" id="openNotifications">
+          <div class="settings-item-icon" style="background:#fef3c7">🔔</div>
+          <div class="settings-item-text">
+            <div class="settings-item-title">Notifications</div>
+            <div class="settings-item-sub">Leave status alerts & reminders</div>
+          </div>
+          <span class="settings-item-arrow">›</span>
+        </div>
+
+        <div class="settings-item" id="openDarkMode">
+          <div class="settings-item-icon" style="background:#f3e8ff">🌙</div>
+          <div class="settings-item-text">
+            <div class="settings-item-title">Dark Mode</div>
+            <div class="settings-item-sub">Switch appearance</div>
+          </div>
+          <div class="toggle-wrap">
+            <button class="toggle" id="darkToggle" onclick="toggleDark(event)"></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-divider"></div>
+
+      <!-- DANGER -->
+      <div class="settings-section">
+        <div class="settings-item danger" id="logoutBtn">
+          <div class="settings-item-icon" style="background:#fee2e2">🚪</div>
+          <div class="settings-item-text">
+            <div class="settings-item-title">Logout</div>
+            <div class="settings-item-sub">Sign out from your account</div>
+          </div>
+          <span class="settings-item-arrow">›</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SUB PANEL: MY PROFILE -->
+    <div class="sub-panel" id="subProfile">
+      <div class="sub-panel-header">
+        <button class="sub-back" onclick="closeSubPanel('subProfile')">‹</button>
+        <span class="sub-panel-title">My Profile</span>
+      </div>
+      <div class="sub-panel-body">
+        <div style="background:linear-gradient(120deg,#1a1f36,#2d3561);border-radius:14px;padding:20px;display:flex;align-items:center;gap:14px;margin-bottom:22px">
+          <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--primary),#a78bfa);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:18px;border:2px solid rgba(255,255,255,0.2)" id="profileAvatarInitials"></div>
+          <div>
+            <div style="font-size:17px;font-weight:800;color:#fff" id="profileHeaderName"></div>
+          </div>
+        </div>
+        <div class="sub-form-group">
+          <label class="sub-form-label">Full Name</label>
+          <input class="sub-form-control" id="profileName" value="" disabled>
+        </div>
+        <div class="sub-form-group">
+          <label class="sub-form-label">PRN</label>
+          <input class="sub-form-control" id="profilePrn" value="" disabled>
+        </div>
+        <div class="sub-form-group">
+          <label class="sub-form-label">Class</label>
+          <input class="sub-form-control" id="profileClass" value="" disabled>
+        </div>
+        <div class="sub-form-group">
+          <label class="sub-form-label">Email Address</label>
+          <input class="sub-form-control" id="profileEmail" value="" disabled>
+        </div>
+        <div class="sub-form-group">
+          <label class="sub-form-label">Phone Number</label>
+          <input class="sub-form-control" id="phoneInput" value="" placeholder="Enter phone number">
+        </div>
+        <button class="btn-primary" style="width:100%;justify-content:center;margin-top:4px" onclick="savePhone()">Save Phone Number</button>
+      </div>
+    </div>
+
+    <!-- SUB PANEL: CHANGE PASSWORD -->
+    <div class="sub-panel" id="subPassword">
+      <div class="sub-panel-header">
+        <button class="sub-back" onclick="closeSubPanel('subPassword')">‹</button>
+        <span class="sub-panel-title">Change Password</span>
+      </div>
+      <div class="sub-panel-body">
+        <div style="background:var(--bg);border-radius:12px;padding:14px 16px;display:flex;gap:10px;margin-bottom:22px;font-size:12.5px;color:var(--muted)">
+          <span>🔐</span>
+          <span>Choose a strong password with at least 8 characters, including a number and a symbol.</span>
+        </div>
+
+        <!-- Current Password -->
+        <div class="sub-form-group">
+          <label class="sub-form-label">Current Password</label>
+          <div style="position:relative">
+            <input type="password" class="sub-form-control" id="currentPwd" placeholder="Enter current password" style="padding-right:42px">
+            <button type="button" class="eye-btn" onclick="toggleEye('currentPwd', this)">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- New Password -->
+        <div class="sub-form-group">
+          <label class="sub-form-label">New Password</label>
+          <div style="position:relative">
+            <input type="password" class="sub-form-control" id="newPwd" placeholder="Enter new password" style="padding-right:42px">
+            <button type="button" class="eye-btn" onclick="toggleEye('newPwd', this)">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Confirm New Password -->
+        <div class="sub-form-group">
+          <label class="sub-form-label">Confirm New Password</label>
+          <div style="position:relative">
+            <input type="password" class="sub-form-control" id="confirmPwd" placeholder="Re-enter new password" style="padding-right:42px">
+            <button type="button" class="eye-btn" onclick="toggleEye('confirmPwd', this)">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <button class="btn-primary" style="width:100%;justify-content:center;margin-top:8px" onclick="changePassword()">Update Password</button>
+      </div>
+    </div>
+
+    <!-- SUB PANEL: NOTIFICATIONS -->
+    <div class="sub-panel" id="subNotifications">
+      <div class="sub-panel-header">
+        <button class="sub-back" onclick="closeSubPanel('subNotifications')">‹</button>
+        <span class="sub-panel-title">Notifications</span>
+      </div>
+      <div class="sub-panel-body">
+        <div style="font-size:12.5px;color:var(--muted);margin-bottom:18px">Choose when and how you want to be notified about your leave applications.</div>
+
+        <div class="notif-row">
+          <div class="notif-row-left">
+            <div class="notif-row-title">Leave Approved</div>
+            <div class="notif-row-sub">Notify when faculty approves your leave</div>
+          </div>
+          <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+        </div>
+        <div class="notif-row">
+          <div class="notif-row-left">
+            <div class="notif-row-title">Leave Rejected</div>
+            <div class="notif-row-sub">Notify when leave is rejected</div>
+          </div>
+          <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+        </div>
+        <div class="notif-row">
+          <div class="notif-row-left">
+            <div class="notif-row-title">Leave Reminder</div>
+            <div class="notif-row-sub">Remind 1 day before leave starts</div>
+          </div>
+          <button class="toggle" onclick="this.classList.toggle('on')"></button>
+        </div>
+        <div class="notif-row">
+          <div class="notif-row-left">
+            <div class="notif-row-title">Email Notifications</div>
+            <div class="notif-row-sub">Send alerts to your college email</div>
+          </div>
+          <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+        </div>
+        <div class="notif-row">
+          <div class="notif-row-left">
+            <div class="notif-row-title">In-App Alerts</div>
+            <div class="notif-row-sub">Show notifications inside the portal</div>
+          </div>
+          <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+        </div>
+
+        <button class="btn-primary" style="width:100%;justify-content:center;margin-top:20px" onclick="showToast('Notification preferences saved!','success','✅')">Save Preferences</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span class="toast-icon" id="toastIcon"></span>
+  <span id="toastMsg"></span>
+</div>
+
+<script src="student-dashboard.js"></script>
+</body>
+</html>

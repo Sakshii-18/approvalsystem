@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leave Approval System - Sign Up</title>
+
+<style>
+
+* {
+  box-sizing: border-box;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: #f4f6f8;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.card {
+  background: white;
+  padding: 30px;
+  width: 380px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 5px;
+  font-size: 26px;
+  color: #333;
+}
+
+.subtitle {
+  text-align: center;
+  color: #777;
+  margin-bottom: 25px;
+}
+
+label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: #444;
+  font-size: 15px;
+}
+
+input, select {
+  width: 100%;
+  padding: 11px;
+  margin-bottom: 18px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 14px;
+  outline: none;
+}
+
+input:focus, select:focus {
+  border-color: #2b6cb0;
+}
+
+.btn {
+  width: 100%;
+  padding: 12px;
+  background: #2f6fed;
+  border: none;
+  color: white;
+  font-size: 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.btn:hover {
+  opacity: 0.95;
+}
+
+.signin {
+  text-align: center;
+  margin-top: 15px;
+  color: #777;
+  font-size: 14px;
+}
+
+.signin a {
+  color: #2f6fed;
+  text-decoration: none;
+}
+
+.pwd-wrap {
+  position: relative;
+  margin-bottom: 18px;
+}
+
+.pwd-wrap input {
+  margin-bottom: 0;
+  padding-right: 42px;
+}
+
+.eye-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #888;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+
+</style>
+
+</head>
+<body>
+
+<div class="card">
+
+  <h1>Approval System</h1>
+  <div class="subtitle">Create your account</div>
+
+  <form id="signupForm">
+
+    <label>Name</label>
+    <input type="text" id="name" placeholder="Your name" required>
+
+    <label>Email</label>
+    <input type="email" id="email" placeholder="Enter email" required>
+
+    <label>Password</label>
+    <div class="pwd-wrap">
+      <input
+        type="password"
+        id="password"
+        placeholder="Enter password"
+        pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}"
+        title="Password must contain upper, lower, number and special character"
+        required
+      >
+      <button type="button" class="eye-btn" onclick="toggleEye('password', this)">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      </button>
+    </div>
+
+    <label>Role</label>
+    <select id="role" required>
+      <option value="">Select role</option>
+      <option value="Student">Student</option>
+      <option value="Teacher">Teacher</option>
+      <option value="HOD">HOD</option>
+      <option value="Director">Director</option>
+    </select>
+
+    <!-- STUDENT ONLY FIELDS -->
+    <label id="classLabel" style="display:none;">Class</label>
+    <select id="std" style="display:none;">
+      <option value="">Select class</option>
+      <option>BCA-1 A</option>
+      <option>BCA-1 B</option>
+      <option>BCA-2 A</option>
+      <option>BCA-2 B</option>
+      <option>BCA-3 A</option>
+      <option>BCA-3 B</option>
+      <option>MCA-1 A</option>
+      <option>MCA-1 B</option>
+      <option>MCA-2 A</option>
+      <option>MCA-2 B</option>
+    </select>
+
+    <label id="prnLabel" style="display:none;">PRN</label>
+    <input
+      type="text"
+      id="prn"
+      placeholder="Enter PRN number"
+      style="display:none"
+      pattern="[0-9]{10,12}"
+      title="Enter valid PRN"
+    >
+
+    <!-- TEACHER / HOD / DIRECTOR ONLY FIELDS -->
+    <div id="secretCodeGroup" style="display:none;">
+      <label>Secret Code</label>
+      <div class="pwd-wrap">
+        <input
+          type="password"
+          id="secretCode"
+          placeholder="Enter secret code"
+          maxlength="20"
+        >
+        <button type="button" class="eye-btn" onclick="toggleEye('secretCode', this)">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <button class="btn" type="submit">Sign Up</button>
+
+  </form>
+
+  <div class="signin">
+    Already have an account?
+    <a href="SignIn.html">Sign In</a>
+  </div>
+
+</div>
+
+<script src="SignUp.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Director Dashboard – Leave Management</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f0f2f8; --surface: #ffffff; --sidebar: #1a1f36; --sidebar-hover: #252d4a;
+    --primary: #4361ee; --primary-light: #eef0fd; --accent: #f72585;
+    --text: #1a1f36; --muted: #6b7280; --border: #e5e8f0;
+    --pending: #fef3c7; --pending-text: #d97706;
+    --approved: #d1fae5; --approved-text: #059669;
+    --rejected: #fee2e2; --rejected-text: #dc2626;
+    --ca-color: #4361ee; --ba-color: #7c3aed;
+    --radius: 14px; --shadow: 0 2px 16px rgba(67,97,238,0.08);
+  }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
+  .sidebar { width: 68px; background: var(--sidebar); display: flex; flex-direction: column; align-items: center; padding: 20px 0; gap: 6px; flex-shrink: 0; z-index: 10; }
+  .sidebar-logo { width: 40px; height: 40px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; font-size: 18px; font-weight: 700; color: #fff; }
+  .sidebar-icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #8892b0; cursor: pointer; transition: all 0.2s; font-size: 18px; position: relative; }
+  .sidebar-icon:hover, .sidebar-icon.active { background: var(--sidebar-hover); color: #fff; }
+  .sidebar-icon.active::before { content: ''; position: absolute; left: 0; width: 3px; height: 70%; background: var(--primary); border-radius: 0 3px 3px 0; }
+  .sidebar-bottom { margin-top: auto; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .topbar { background: var(--surface); padding: 0 28px; height: 64px; display: flex; align-items: center; gap: 16px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .topbar-brand { font-size: 17px; font-weight: 700; color: var(--primary); letter-spacing: -0.5px; margin-right: 8px; }
+  .topbar-actions { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+  .icon-btn { width: 38px; height: 38px; border-radius: 10px; border: 1.5px solid var(--border); background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--muted); transition: all 0.2s; position: relative; }
+  .icon-btn:hover { border-color: var(--primary); color: var(--primary); }
+  .notif-badge { position: absolute; top: -4px; right: -4px; background: var(--accent); color: #fff; font-size: 10px; font-weight: 700; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+  .tab { padding: 14px 20px; font-size: 13.5px; font-weight: 500; color: var(--muted); cursor: pointer; border-bottom: 2.5px solid transparent; transition: all 0.2s; display: flex; align-items: center; gap: 8px; }
+  .tab.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
+  .tab:hover { color: var(--text); }
+  .content { flex: 1; overflow-y: auto; padding: 24px 28px; display: flex; flex-direction: column; gap: 22px; }
+  .director-banner { background: linear-gradient(120deg, #0f172a 0%, #1e1b4b 50%, #1a1f36 100%); border-radius: var(--radius); padding: 22px 28px; display: flex; align-items: center; justify-content: space-between; position: relative; overflow: hidden; min-height: 115px; }
+  .director-banner::before { content: ''; position: absolute; right: -30px; top: -30px; width: 200px; height: 200px; background: radial-gradient(circle, rgba(67,97,238,0.3) 0%, transparent 70%); border-radius: 50%; }
+  .director-banner::after  { content: ''; position: absolute; left: 25%; bottom: -60px; width: 160px; height: 160px; background: radial-gradient(circle, rgba(124,58,237,0.2) 0%, transparent 70%); border-radius: 50%; }
+  .banner-left { position: relative; z-index: 1; flex: 1; }
+  .banner-role { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #818cf8; margin-bottom: 5px; }
+  .banner-name { font-size: 21px; font-weight: 700; color: #fff; line-height: 1.2; }
+  .banner-right { position: relative; z-index: 1; display: flex; align-items: center; background: rgba(255,255,255,0.05); border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); padding: 4px 6px; flex-shrink: 0; }
+  .banner-stat { text-align: center; padding: 10px 20px; }
+  .banner-stat-val { font-size: 30px; font-weight: 800; color: #fff; line-height: 1; }
+  .banner-stat-label { font-size: 11px; color: #94a3b8; margin-top: 5px; white-space: nowrap; }
+  .banner-stat-divider { width: 1px; height: 44px; background: rgba(255,255,255,0.12); align-self: center; flex-shrink: 0; }
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .stat-card { background: var(--surface); border-radius: var(--radius); padding: 16px 20px; box-shadow: var(--shadow); border: 1.5px solid var(--border); display: flex; align-items: center; gap: 14px; transition: transform 0.2s, box-shadow 0.2s; }
+  .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(67,97,238,0.13); }
+  .stat-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+  .stat-val { font-size: 24px; font-weight: 800; line-height: 1; }
+  .stat-label { font-size: 12px; color: var(--muted); margin-top: 3px; }
+  .dept-toggle { display: flex; background: var(--bg); border-radius: 10px; padding: 3px; gap: 2px; }
+  .dept-btn { padding: 6px 18px; border-radius: 8px; font-size: 12.5px; font-weight: 700; cursor: pointer; border: none; background: transparent; color: var(--muted); transition: all 0.18s; font-family: inherit; display: flex; align-items: center; gap: 6px; }
+  .dept-btn.active-ca { background: var(--surface); color: var(--ca-color); box-shadow: 0 1px 6px rgba(67,97,238,0.15); }
+  .dept-btn.active-ba { background: var(--surface); color: var(--ba-color); box-shadow: 0 1px 6px rgba(124,58,237,0.15); }
+  .dept-btn .dept-dot { width: 7px; height: 7px; border-radius: 50%; }
+  .card { background: var(--surface); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); border: 1.5px solid var(--border); }
+  .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .card-title { font-size: 14px; font-weight: 600; color: var(--text); }
+  .card-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .section-header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 2px; }
+  .section-title { font-size: 14px; font-weight: 600; color: var(--text); letter-spacing: 0.2px; }
+  table { width: 100%; border-collapse: collapse; }
+  th { font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; color: var(--muted); padding: 0 10px 10px; text-align: left; border-bottom: 1.5px solid var(--border); }
+  td { padding: 11px 10px; font-size: 13px; color: var(--text); border-bottom: 1px solid var(--bg); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--bg); }
+  .badge-status { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 600; }
+  .badge-pending  { background: var(--pending);  color: var(--pending-text); }
+  .badge-approved { background: var(--approved); color: var(--approved-text); }
+  .badge-rejected { background: var(--rejected); color: var(--rejected-text); }
+  .badge-forwarded { background: #e0f2fe; color: #0369a1; }
+  .class-badge { display: inline-flex; align-items: center; padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; background: #dbeafe; color: #1d4ed8; letter-spacing: 0.3px; }
+  .dept-badge-ca { background: #eef0fd; color: var(--ca-color); display: inline-flex; padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+  .dept-badge-ba { background: #f5f3ff; color: var(--ba-color); display: inline-flex; padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+  .filter-tabs { display: flex; gap: 4px; background: var(--bg); border-radius: 10px; padding: 3px; }
+  .filter-tab { padding: 5px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; background: transparent; color: var(--muted); transition: all 0.18s; font-family: inherit; }
+  .filter-tab.active { background: var(--surface); color: var(--primary); box-shadow: 0 1px 6px rgba(67,97,238,0.12); }
+  .action-btns { display: flex; gap: 6px; }
+  .action-btn { width: 28px; height: 28px; border-radius: 7px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 13px; transition: transform 0.15s; }
+  .action-btn:hover { transform: scale(1.15); }
+  .btn-approve { background: #d1fae5; color: #059669; }
+  .btn-reject  { background: #fee2e2; color: #dc2626; }
+  .btn-view-app { background: var(--primary-light); color: var(--primary); border: 1.5px solid #c7d2fe; border-radius: 8px; padding: 4px 12px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.2s; white-space: nowrap; }
+  .btn-view-app:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .class-pill { padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; border: 1.5px solid var(--border); background: transparent; color: var(--muted); transition: all 0.18s; font-family: inherit; white-space: nowrap; }
+  .class-pill:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+  .class-pill.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .snapshot-card { background: var(--bg); border-radius: 12px; padding: 14px 16px; border: 1.5px solid var(--border); transition: transform 0.15s, box-shadow 0.15s; }
+  .snapshot-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+  .snapshot-val { font-size: 26px; font-weight: 800; line-height: 1; }
+  .snapshot-sub { font-size: 11px; color: var(--muted); margin-top: 6px; font-family: 'DM Mono', monospace; }
+  .reason-text { font-size: 11.5px; color: var(--muted); background: var(--bg); padding: 2px 8px; border-radius: 6px; max-width: 140px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: inline-block; }
+  .dept-overview { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .dept-card { background: var(--surface); border-radius: var(--radius); padding: 18px 20px; box-shadow: var(--shadow); border: 1.5px solid var(--border); position: relative; overflow: hidden; }
+  .dept-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+  .dept-card.ca::before { background: linear-gradient(90deg, var(--ca-color), #818cf8); }
+  .dept-card.ba::before { background: linear-gradient(90deg, var(--ba-color), #a78bfa); }
+  .dept-card-name { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .dept-mini-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .dept-mini-stat { text-align: center; background: var(--bg); border-radius: 10px; padding: 10px 6px; }
+  .dept-mini-val { font-size: 20px; font-weight: 800; line-height: 1; }
+  .dept-mini-label { font-size: 10.5px; color: var(--muted); margin-top: 3px; }
+  .hod-ref { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--muted); }
+  .hod-ref-dot { width: 6px; height: 6px; border-radius: 50%; background: #818cf8; flex-shrink: 0; }
+  .app-modal-overlay { position: fixed; inset: 0; background: rgba(26,31,54,0.45); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 100; }
+  .app-modal-overlay.open { display: flex; }
+  .app-modal { background: var(--surface); border-radius: 18px; padding: 0; width: 480px; box-shadow: 0 24px 64px rgba(0,0,0,0.15); overflow: hidden; }
+  .app-modal-header { background: linear-gradient(120deg, #0f172a 0%, #1e1b4b 100%); padding: 20px 24px; }
+  .app-modal-title { font-size: 16px; font-weight: 700; color: #fff; display: flex; justify-content: space-between; align-items: center; }
+  .app-modal-body { padding: 20px 24px; }
+  .app-detail-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--bg); }
+  .app-detail-row:last-child { border-bottom: none; }
+  .app-detail-label { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; }
+  .app-detail-val { font-size: 13.5px; font-weight: 600; color: var(--text); }
+  .app-modal-footer { padding: 0 24px 20px; display: flex; gap: 10px; justify-content: flex-end; }
+  .btn-primary { background: var(--primary); color: #fff; border: none; border-radius: 10px; padding: 9px 20px; font-size: 13.5px; font-weight: 600; font-family: inherit; cursor: pointer; transition: all 0.2s; }
+  .btn-primary:hover { background: #3451d1; }
+  .btn-secondary { background: var(--bg); color: var(--text); border: 1.5px solid var(--border); border-radius: 10px; padding: 9px 20px; font-size: 13.5px; font-weight: 600; font-family: inherit; cursor: pointer; transition: all 0.2s; }
+  .btn-secondary:hover { border-color: var(--primary); color: var(--primary); }
+  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--text); color: #fff; padding: 12px 20px; border-radius: 12px; font-size: 13.5px; font-weight: 500; transform: translateY(80px); opacity: 0; transition: all 0.3s ease; z-index: 200; box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { background: #059669; }
+  .toast.error   { background: #dc2626; }
+  .toast.info    { background: #0369a1; }
+  ::-webkit-scrollbar { width: 5px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+  .settings-overlay { position: fixed; inset: 0; z-index: 150; display: none; }
+  .settings-overlay.open { display: block; }
+  .settings-panel { position: fixed; left: 68px; bottom: 20px; width: 340px; background: #fff; border-radius: 18px; box-shadow: 0 8px 40px rgba(26,31,54,0.18); z-index: 160; overflow: hidden; border: 1.5px solid var(--border); max-height: 85vh; overflow-y: auto; }
+  .settings-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px 14px; border-bottom: 1.5px solid var(--border); }
+  .settings-header-left { display: flex; align-items: center; gap: 12px; }
+  .settings-header-icon { width: 38px; height: 38px; background: var(--primary-light); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+  .settings-header-title { font-size: 15px; font-weight: 700; color: var(--text); }
+  .settings-header-sub { font-size: 12px; color: var(--muted); }
+  .settings-close-btn { width: 30px; height: 30px; border-radius: 8px; border: 1.5px solid var(--border); background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 16px; }
+  .settings-user-card { margin: 14px; background: var(--sidebar); border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; }
+  .settings-user-avatar { width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(135deg, #4361ee, #7c3aed); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 15px; flex-shrink: 0; }
+  .settings-user-name { font-size: 14px; font-weight: 700; color: #fff; }
+  .settings-user-sub { font-size: 11.5px; color: #94a3b8; margin-top: 2px; }
+  .settings-user-chips { display: flex; gap: 6px; margin-top: 8px; }
+  .settings-chip { background: rgba(255,255,255,0.1); color: #cbd5e1; font-size: 10.5px; font-weight: 600; padding: 3px 9px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.08); }
+  .settings-section-label { font-size: 10.5px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); padding: 10px 20px 4px; }
+  .settings-menu-item { display: flex; align-items: center; justify-content: space-between; padding: 11px 20px; cursor: pointer; transition: background 0.15s; }
+  .settings-menu-item:hover { background: var(--bg); }
+  .settings-menu-left { display: flex; align-items: center; gap: 12px; }
+  .settings-menu-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+  .settings-menu-title { font-size: 13.5px; font-weight: 600; color: var(--text); }
+  .settings-menu-sub { font-size: 11.5px; color: var(--muted); }
+  .settings-menu-arrow { color: var(--muted); font-size: 14px; }
+  .settings-divider { height: 1px; background: var(--border); margin: 6px 0; }
+  .settings-logout .settings-menu-title { color: #dc2626; }
+  .toggle-switch { position: relative; width: 40px; height: 22px; }
+  .toggle-switch input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider { position: absolute; cursor: pointer; inset: 0; background: #cbd5e1; border-radius: 22px; transition: 0.3s; }
+  .toggle-slider:before { content: ''; position: absolute; height: 16px; width: 16px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s; }
+  .toggle-switch input:checked + .toggle-slider { background: var(--primary); }
+  .toggle-switch input:checked + .toggle-slider:before { transform: translateX(18px); }
+  .settings-subpanel { display: none; }
+  .settings-subpanel.active { display: block; }
+  .settings-back-btn { display: flex; align-items: center; gap: 8px; padding: 14px 20px; font-size: 14px; font-weight: 700; color: var(--text); cursor: pointer; border-bottom: 1.5px solid var(--border); }
+  .settings-back-btn:hover { color: var(--primary); }
+  .settings-form-field { padding: 0 20px 14px; }
+  .settings-form-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); margin-bottom: 6px; display: block; }
+  .settings-form-input { width: 100%; border: 1.5px solid var(--border); border-radius: 10px; padding: 9px 14px; font-size: 13.5px; font-family: inherit; color: var(--text); background: var(--bg); outline: none; transition: border-color 0.2s; }
+  .settings-form-input:focus { border-color: var(--primary); background: #fff; }
+  .settings-form-hint { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .settings-save-btn { display: block; width: calc(100% - 40px); margin: 0 20px 20px; background: var(--primary); color: #fff; border: none; border-radius: 10px; padding: 10px; font-size: 13.5px; font-weight: 600; font-family: inherit; cursor: pointer; text-align: center; }
+  .settings-save-btn:hover { background: #3451d1; }
+  .settings-info-banner { margin: 0 20px 14px; background: #fef3c7; border-radius: 10px; padding: 10px 14px; font-size: 12px; color: #92400e; }
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="sidebar-logo">D</div>
+  <div class="sidebar-icon active" title="Dashboard">
+    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+  </div>
+  <div class="sidebar-bottom">
+    <div class="sidebar-icon" title="Settings">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93A10 10 0 1 0 4.93 19.07 10 10 0 0 0 19.07 4.93z"/></svg>
+    </div>
+  </div>
+</aside>
+<div class="main">
+  <header class="topbar">
+    <div style="display:flex;align-items:center;gap:10px">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4361ee" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+      <span class="topbar-brand">Director Portal</span>
+    </div>
+    <div class="topbar-actions">
+      <button class="icon-btn" id="notifBtn" title="Notifications">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span class="notif-badge">0</span>
+      </button>
+    </div>
+  </header>
+  <div style="background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;display:flex;align-items:center;gap:0;flex-shrink:0;">
+    <div style="display:flex;align-items:center;gap:8px;margin-right:24px;padding:14px 0">
+      <svg width="16" height="16" fill="none" stroke="#4361ee" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+      <span style="font-size:13px;font-weight:600;color:#4361ee">Leave Management System</span>
+    </div>
+    <div class="tab active" data-tab="dashboard">Dashboard</div>
+    <div class="tab" data-tab="leave-approval">Leave Approval</div>
+    <div class="tab" data-tab="leave-history">Leave History</div>
+  </div>
+  <div class="content">
+    <div class="director-banner">
+      <div class="banner-left">
+        <div class="banner-role">Director</div>
+        <div class="banner-name">Director</div>
+      </div>
+      <div class="banner-right">
+        <div class="banner-stat"><div class="banner-stat-val" id="bannerPending">0</div><div class="banner-stat-label">Forwarded to You</div></div>
+        <div class="banner-stat-divider"></div>
+        <div class="banner-stat"><div class="banner-stat-val" id="bannerTotal">0</div><div class="banner-stat-label">Total Applications</div></div>
+        <div class="banner-stat-divider"></div>
+        <div class="banner-stat"><div class="banner-stat-val" id="bannerApproved">0</div><div class="banner-stat-label">Approved</div></div>
+      </div>
+    </div>
+    <div>
+      <div class="section-header" style="margin-bottom:14px">
+        <span class="section-title">Department Overview</span>
+        <span style="font-size:12px;color:var(--muted)">All Departments</span>
+      </div>
+      <div class="dept-overview">
+        <div class="dept-card ca">
+          <div class="dept-card-name"><span style="background:var(--ca-color);width:8px;height:8px;border-radius:50%;display:inline-block"></span>Computer Applications (CA)</div>
+          <div class="dept-mini-stats" id="caStats"></div>
+        </div>
+        <div class="dept-card ba">
+          <div class="dept-card-name"><span style="background:var(--ba-color);width:8px;height:8px;border-radius:50%;display:inline-block"></span>Business Administration (BA)</div>
+          <div class="dept-mini-stats" id="baStats"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Forwarded Leave Approvals</div>
+          <div class="card-sub">HOD-escalated applications awaiting Director decision</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <div class="dept-toggle">
+            <button class="dept-btn active-ca" onclick="filterDept('all',this)">All</button>
+            <button class="dept-btn" onclick="filterDept('CA',this)"><span class="dept-dot" style="background:var(--ca-color)"></span>CA</button>
+            <button class="dept-btn" onclick="filterDept('BA',this)"><span class="dept-dot" style="background:var(--ba-color)"></span>BA</button>
+          </div>
+          <div class="filter-tabs">
+            <button class="filter-tab active" onclick="filterStatus('all',this)">All</button>
+            <button class="filter-tab" onclick="filterStatus('Pending',this)">Pending</button>
+            <button class="filter-tab" onclick="filterStatus('Approved',this)">Approved</button>
+            <button class="filter-tab" onclick="filterStatus('Rejected',this)">Rejected</button>
+          </div>
+          <span style="font-size:12px;color:var(--muted);background:var(--bg);padding:4px 10px;border-radius:20px;font-weight:600" id="pendingCount">0 Pending</span>
+        </div>
+      </div>
+      <table>
+        <thead><tr>
+          <th>Student Name</th><th>Dept</th><th>Class</th><th>Leave Type</th>
+          <th>Duration</th><th>Days</th><th>Forwarded By</th><th>Status</th>
+          <th>View</th><th>Action</th>
+        </tr></thead>
+        <tbody id="approvalTable"></tbody>
+      </table>
+      <div id="approvalEmpty" style="display:none;text-align:center;padding:32px;color:var(--muted)">
+        <div style="font-size:32px;margin-bottom:8px">✅</div>
+        <div style="font-size:13px">No applications match the current filter</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header" style="margin-bottom:18px">
+        <div>
+          <span class="card-title">Department Leave History</span>
+          <div style="font-size:12px;color:var(--muted);margin-top:3px">All leave records across departments</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          <span style="font-size:12px;color:var(--muted);margin-right:4px">Filter:</span>
+          <button class="class-pill active" onclick="selectHistClass('all',this)">All</button>
+          <button class="class-pill" onclick="selectHistClass('BCA-1 A',this)">BCA-1 A</button>
+          <button class="class-pill" onclick="selectHistClass('BCA-1 B',this)">BCA-1 B</button>
+          <button class="class-pill" onclick="selectHistClass('BCA-2 A',this)">BCA-2 A</button>
+          <button class="class-pill" onclick="selectHistClass('BCA-3 A',this)">BCA-3 A</button>
+          <button class="class-pill" onclick="selectHistClass('MCA-1 A',this)">MCA-1 A</button>
+          <button class="class-pill" onclick="selectHistClass('MCA-2 A',this)">MCA-2 A</button>
+        </div>
+      </div>
+      <div id="histSnapshot" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px"></div>
+      <table>
+        <thead><tr>
+          <th>Student Name</th><th>Dept</th><th>Class</th><th>Leave Type</th>
+          <th>From</th><th>To</th><th>Days</th><th>Reason</th><th>Status</th>
+        </tr></thead>
+        <tbody id="historyTable"></tbody>
+      </table>
+      <div id="historyEmpty" style="display:none;text-align:center;padding:32px;color:var(--muted)">
+        <div style="font-size:32px;margin-bottom:8px">📋</div>
+        <div style="font-size:13px">No leave records found</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- VIEW APPLICATION MODAL -->
+<div class="app-modal-overlay" id="appModal">
+  <div class="app-modal">
+    <div class="app-modal-header">
+      <div class="app-modal-title">
+        <span>Leave Application</span>
+        <button class="settings-close-btn" style="border-color:rgba(255,255,255,0.2);color:#fff;background:rgba(255,255,255,0.1)" onclick="closeAppModal()">✕</button>
+      </div>
+    </div>
+    <div class="app-modal-body">
+      <div class="app-detail-row"><span class="app-detail-label">Student Name</span><span class="app-detail-val" id="appStudentName">—</span></div>
+      <div class="app-detail-row"><span class="app-detail-label">Department</span><span class="app-detail-val" id="appDept">—</span></div>
+      <div class="app-detail-row"><span class="app-detail-label">Class</span><span class="app-detail-val" id="appClass">—</span></div>
+      <div class="app-detail-row"><span class="app-detail-label">Leave Type</span><span class="app-detail-val" id="appLeaveType">—</span></div>
+      <div class="app-detail-row"><span class="app-detail-label">Duration</span><span class="app-detail-val" id="appDuration">—</span></div>
+      <div class="app-detail-row"><span class="app-detail-label">Days</span><span class="app-detail-val" id="appDays">—</span></div>
+      <div class="app-detail-row"><span class="app-detail-label">Forwarded By</span><span class="app-detail-val" id="appHOD">—</span></div>
+      <div class="app-detail-row"><span class="app-detail-label">Status</span><span id="appStatus">—</span></div>
+    </div>
+    <div class="app-modal-footer">
+      <button class="btn-secondary" id="appRejectBtn" onclick="rejectFromModal()">✕ Reject</button>
+      <button class="btn-primary"   id="appApproveBtn" onclick="approveFromModal()">✓ Approve</button>
+      <button class="btn-secondary" onclick="closeAppModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- SETTINGS PANEL -->
+<div class="settings-overlay" id="settingsOverlay" onclick="closeSettings(event)"></div>
+<div class="settings-panel" id="settingsPanel" style="display:none">
+  <div id="settingsMain">
+    <div class="settings-header">
+      <div class="settings-header-left">
+        <div class="settings-header-icon">⚙️</div>
+        <div><div class="settings-header-title">Settings</div><div class="settings-header-sub">Manage your preferences</div></div>
+      </div>
+      <button class="settings-close-btn" onclick="toggleSettings()">✕</button>
+    </div>
+    <div class="settings-user-card">
+      <div class="settings-user-avatar">D</div>
+      <div>
+        <div class="settings-user-name">Director</div>
+        <div class="settings-user-sub">Director · Principal</div>
+        <div class="settings-user-chips"><span class="settings-chip">All Departments</span></div>
+      </div>
+    </div>
+    <div class="settings-section-label">Account</div>
+    <div class="settings-menu-item" onclick="showSubPanel('profile')">
+      <div class="settings-menu-left">
+        <div class="settings-menu-icon" style="background:#eef0fd">👤</div>
+        <div><div class="settings-menu-title">My Profile</div><div class="settings-menu-sub">View your institutional details</div></div>
+      </div><span class="settings-menu-arrow">›</span>
+    </div>
+    <div class="settings-menu-item" onclick="showSubPanel('password')">
+      <div class="settings-menu-left">
+        <div class="settings-menu-icon" style="background:#fef3c7">🔒</div>
+        <div><div class="settings-menu-title">Change Password</div><div class="settings-menu-sub">Update your login password</div></div>
+      </div><span class="settings-menu-arrow">›</span>
+    </div>
+    <div class="settings-divider"></div>
+    <div class="settings-section-label">Preferences</div>
+    <div class="settings-menu-item">
+      <div class="settings-menu-left">
+        <div class="settings-menu-icon" style="background:#f3e8ff">🌙</div>
+        <div><div class="settings-menu-title">Dark Mode</div><div class="settings-menu-sub">Switch appearance</div></div>
+      </div>
+      <label class="toggle-switch"><input type="checkbox" onchange="toggleDarkMode(this)"><span class="toggle-slider"></span></label>
+    </div>
+    <div class="settings-divider"></div>
+    <div class="settings-menu-item settings-logout">
+      <div class="settings-menu-left">
+        <div class="settings-menu-icon" style="background:#fee2e2">🚪</div>
+        <div><div class="settings-menu-title">Logout</div><div class="settings-menu-sub">Sign out from your account</div></div>
+      </div><span class="settings-menu-arrow" style="color:#dc2626">›</span>
+    </div>
+    <div style="height:8px"></div>
+  </div>
+  <div id="settingsProfile" class="settings-subpanel">
+    <div class="settings-back-btn" onclick="showSubPanel('main')">‹ &nbsp; My Profile</div>
+    <div style="height:8px"></div>
+    <div class="settings-form-field">
+      <label class="settings-form-label">Full Name</label>
+      <input class="settings-form-input" id="profileName" readonly>
+    </div>
+    <div class="settings-form-field">
+      <label class="settings-form-label">Email Address</label>
+      <input class="settings-form-input" id="profileEmail" readonly>
+    </div>
+    <div class="settings-form-field">
+      <label class="settings-form-label">Role</label>
+      <input class="settings-form-input" value="Director" readonly>
+    </div>
+  </div>
+  <div id="settingsPassword" class="settings-subpanel">
+    <div class="settings-back-btn" onclick="showSubPanel('main')">‹ &nbsp; Change Password</div>
+    <div style="height:8px"></div>
+    <div class="settings-info-banner">🔒 Choose a strong password with at least 8 characters.</div>
+    <div class="settings-form-field">
+      <label class="settings-form-label">Current Password</label>
+      <input class="settings-form-input" type="password" placeholder="Enter current password">
+    </div>
+    <div class="settings-form-field">
+      <label class="settings-form-label">New Password</label>
+      <input class="settings-form-input" type="password" placeholder="Enter new password">
+    </div>
+    <div class="settings-form-field">
+      <label class="settings-form-label">Confirm New Password</label>
+      <input class="settings-form-input" type="password" placeholder="Re-enter new password">
+    </div>
+    <button class="settings-save-btn">Update Password</button>
+  </div>
+  <div id="settingsNotifications" class="settings-subpanel"></div>
+</div>
+
+<script>
+const API = 'http://localhost:8081';
+
+// ===================== DIRECTOR USER FROM localStorage =====================
+const dirUser = JSON.parse(localStorage.getItem('user') || '{}');
+
+// Populate director name everywhere
+document.querySelectorAll('.banner-name').forEach(el => el.textContent = dirUser.name || 'Director');
+document.querySelectorAll('.settings-user-name').forEach(el => el.textContent = dirUser.name || 'Director');
+const initials = (dirUser.name || 'D').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+document.querySelectorAll('.settings-user-avatar').forEach(el => el.textContent = initials);
+
+// Profile panel
+document.querySelectorAll('#settingsProfile .settings-form-input').forEach(inp => {
+  if (inp.value === 'Dr. Suresh Patel') inp.value = dirUser.name || '';
+  if (inp.value === 'suresh.patel@college.edu') inp.value = dirUser.email || '';
+});
+
+// ===================== STATE =====================
+let approvalData     = [];   // PENDING_HOD leaves (director sees all escalated)
+let allLeavesData    = [];   // All leaves for history
+let activeDeptFilter   = 'all';
+let activeStatusFilter = 'all';
+let activeHistClass    = 'all';
+let currentAppId       = null;
+
+// ===================== FETCH ALL DATA =====================
+async function loadAllData() {
+  try {
+    const res = await fetch(`${API}/leave`);
+    if (!res.ok) throw new Error('Server error');
+    const all = await res.json();
+
+    // Director sees leaves at HOD level and above (days > 3)
+    // PENDING_HOD = waiting for HOD, APPROVED_BY_HOD = HOD approved (director may want to see)
+    // For "forwarded to director" table: show PENDING_HOD (these need HOD then director)
+    // Actually director sees everything that's been escalated beyond teacher
+    approvalData  = all.filter(l => l.days > 3).map(mapLeave);
+    allLeavesData = all.map(mapLeave);
+
+    updateBannerCounts();
+    renderDeptOverview();
+    renderApprovalTable();
+    renderHistSnapshot();
+    renderHistoryTable();
+    updateNotifBadge();
+  } catch (err) {
+    showToast('Failed to load data from server', 'error');
+    console.error(err);
+  }
+}
+
+function mapLeave(l) {
+  const cls = l.user?.className || '—';
+  // Infer dept from className (e.g. "BCA-1 A" → CA, "MCA-1 A" → CA)
+  const dept = cls.toLowerCase().includes('mca') || cls.toLowerCase().includes('bca') ? 'CA' : 'BA';
+  return {
+    id:        l.id,
+    name:      l.user?.name || '—',
+    dept:      dept,
+    cls:       cls,
+    type:      l.reason || '—',
+    reason:    l.reason || '—',
+    start:     '—',
+    end:       '—',
+    days:      l.days,
+    hodName:   l.teacherId ? `HOD` : '—',
+    status:    mapStatus(l.status),
+    rawStatus: l.status,
+  };
+}
+
+function mapStatus(s) {
+  const map = {
+    PENDING_TEACHER:     'Forwarded',
+    PENDING_HOD:         'Pending',
+    APPROVED_BY_TEACHER: 'Approved',
+    APPROVED_BY_HOD:     'Approved',
+    REJECTED:            'Rejected',
+    CANCELLED:           'Cancelled',
+  };
+  return map[s] || s;
+}
+
+// ===================== BANNER COUNTS =====================
+function updateBannerCounts() {
+  const pending  = approvalData.filter(r => r.status === 'Pending').length;
+  const total    = approvalData.length;
+  const approved = approvalData.filter(r => r.status === 'Approved').length;
+  document.getElementById('bannerPending').textContent  = pending;
+  document.getElementById('bannerTotal').textContent    = total;
+  document.getElementById('bannerApproved').textContent = approved;
+}
+
+// ===================== DEPT OVERVIEW MINI CARDS =====================
+function renderDeptOverview() {
+  ['CA', 'BA'].forEach(dept => {
+    const deptData = approvalData.filter(r => r.dept === dept);
+    const total    = deptData.length;
+    const pending  = deptData.filter(r => r.status === 'Pending').length;
+    const approved = deptData.filter(r => r.status === 'Approved').length;
+    const color    = dept === 'CA' ? '#4361ee' : '#7c3aed';
+
+    const container = document.getElementById(dept.toLowerCase() + 'Stats');
+    container.innerHTML = '';
+    [
+      { label: 'Total',    val: total    },
+      { label: 'Pending',  val: pending  },
+      { label: 'Approved', val: approved },
+    ].forEach(s => {
+      const div = document.createElement('div');
+      div.className = 'dept-mini-stat';
+      div.innerHTML = `<div class="dept-mini-val" style="color:${color}">${s.val}</div><div class="dept-mini-label">${s.label}</div>`;
+      container.appendChild(div);
+    });
+  });
+}
+
+// ===================== APPROVAL TABLE =====================
+function renderApprovalTable() {
+  const tbody = document.getElementById('approvalTable');
+  const empty = document.getElementById('approvalEmpty');
+  tbody.innerHTML = '';
+
+  let data = approvalData;
+  if (activeDeptFilter !== 'all')   data = data.filter(r => r.dept === activeDeptFilter);
+  if (activeStatusFilter !== 'all') data = data.filter(r => r.status === activeStatusFilter);
+
+  const pending = approvalData.filter(r => r.status === 'Pending').length;
+  document.getElementById('pendingCount').textContent = `${pending} Pending`;
+
+  if (data.length === 0) { empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+
+  data.forEach(row => {
+    const statusClass = {
+      Pending:   'badge-pending',
+      Approved:  'badge-approved',
+      Rejected:  'badge-rejected',
+      Forwarded: 'badge-forwarded',
+      Cancelled: 'badge-rejected',
+    }[row.status] || 'badge-pending';
+
+    const deptBadge  = row.dept === 'CA'
+      ? `<span class="dept-badge-ca">CA</span>`
+      : `<span class="dept-badge-ba">BA</span>`;
+    const showActions = row.status === 'Pending';
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><strong>${row.name}</strong></td>
+      <td>${deptBadge}</td>
+      <td><span class="class-badge">${row.cls}</span></td>
+      <td>${row.type}</td>
+      <td style="font-size:12px;color:var(--muted)">— → —</td>
+      <td style="text-align:center;font-weight:700">${row.days}</td>
+      <td><div class="hod-ref"><span class="hod-ref-dot"></span><span>${row.hodName}</span></div></td>
+      <td><span class="badge-status ${statusClass}">${row.status}</span></td>
+      <td><button class="btn-view-app" onclick="viewApplication(${row.id})">👁 View</button></td>
+      <td>${showActions ? `
+        <div class="action-btns">
+          <button class="action-btn btn-approve" onclick="handleApproval(${row.id},'Approved')" title="Approve">✓</button>
+          <button class="action-btn btn-reject"  onclick="handleApproval(${row.id},'Rejected')" title="Reject">✕</button>
+        </div>` : '—'}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+// ===================== APPROVE / REJECT → BACKEND =====================
+async function handleApproval(id, status) {
+  const row = approvalData.find(r => r.id === id);
+  if (!row) return;
+
+  const endpoint = status === 'Approved'
+    ? `${API}/leave/approve/${id}`
+    : `${API}/leave/reject/${id}`;
+
+  try {
+    const res = await fetch(endpoint, { method: 'POST' });
+    if (!res.ok) throw new Error('Server error');
+    showToast(`${row.name}'s leave ${status.toLowerCase()}!`, status === 'Approved' ? 'success' : 'error');
+    await loadAllData();
+  } catch (err) {
+    showToast('Action failed — check server connection', 'error');
+    console.error(err);
+  }
+}
+
+function filterDept(dept, btn) {
+  activeDeptFilter = dept;
+  document.querySelectorAll('.dept-btn').forEach(b => b.classList.remove('active-ca', 'active-ba'));
+  btn.classList.add(dept === 'BA' ? 'active-ba' : 'active-ca');
+  renderApprovalTable();
+}
+
+function filterStatus(status, btn) {
+  activeStatusFilter = status;
+  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  renderApprovalTable();
+}
+
+// ===================== HISTORY =====================
+function selectHistClass(cls, btn) {
+  activeHistClass = cls;
+  document.querySelectorAll('.class-pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  renderHistSnapshot();
+  renderHistoryTable();
+}
+
+function renderHistSnapshot() {
+  const data      = activeHistClass === 'all' ? allLeavesData : allLeavesData.filter(r => r.cls === activeHistClass);
+  const total     = data.length;
+  const approved  = data.filter(r => r.status === 'Approved').length;
+  const pending   = data.filter(r => r.status === 'Pending').length;
+  const totalDays = data.reduce((s, r) => s + r.days, 0);
+
+  const snaps = [
+    { label: 'Total Applications', val: total,     color: '#4361ee', bg: '#eef0fd', icon: '📋' },
+    { label: 'Approved',           val: approved,  color: '#059669', bg: '#d1fae5', icon: '✅' },
+    { label: 'Pending',            val: pending,   color: '#d97706', bg: '#fef3c7', icon: '⏳' },
+    { label: 'Total Leave Days',   val: totalDays, color: '#7c3aed', bg: '#f5f3ff', icon: '📅' },
+  ];
+
+  const container = document.getElementById('histSnapshot');
+  container.innerHTML = '';
+  snaps.forEach(s => {
+    const div = document.createElement('div');
+    div.className = 'snapshot-card';
+    div.innerHTML = `
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="font-size:18px">${s.icon}</span>
+        <span style="font-size:11.5px;color:var(--muted);font-weight:600">${s.label}</span>
+      </div>
+      <div class="snapshot-val" style="color:${s.color}">${s.val}</div>
+      <div class="snapshot-sub">${activeHistClass === 'all' ? 'All Departments' : activeHistClass}</div>`;
+    container.appendChild(div);
+  });
+}
+
+function renderHistoryTable() {
+  const tbody = document.getElementById('historyTable');
+  const empty = document.getElementById('historyEmpty');
+  const data  = activeHistClass === 'all' ? allLeavesData : allLeavesData.filter(r => r.cls === activeHistClass);
+
+  tbody.innerHTML = '';
+  if (data.length === 0) { empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+
+  const typeColors = {
+    'Sick Leave':     'background:#fef3c7;color:#d97706',
+    'Casual Leave':   'background:#d1fae5;color:#059669',
+    'Learning Leave': 'background:#eef0fd;color:#4361ee',
+    'Annual Leave':   'background:#f5f3ff;color:#7c3aed',
+  };
+
+  data.forEach(row => {
+    const statusClass = {
+      Pending:   'badge-pending',
+      Approved:  'badge-approved',
+      Rejected:  'badge-rejected',
+      Cancelled: 'badge-rejected',
+      Forwarded: 'badge-forwarded',
+    }[row.status] || 'badge-pending';
+    const deptBadge = row.dept === 'CA'
+      ? `<span class="dept-badge-ca">CA</span>`
+      : `<span class="dept-badge-ba">BA</span>`;
+    const typeStyle = typeColors[row.type] || '';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><strong>${row.name}</strong></td>
+      <td>${deptBadge}</td>
+      <td><span class="class-badge">${row.cls}</span></td>
+      <td><span class="badge-status" style="font-size:11.5px;font-weight:600;padding:3px 10px;border-radius:20px;${typeStyle}">${row.type}</span></td>
+      <td style="font-size:12px;color:var(--muted);font-family:'DM Mono',monospace">—</td>
+      <td style="font-size:12px;color:var(--muted);font-family:'DM Mono',monospace">—</td>
+      <td style="text-align:center;font-weight:700">${row.days}</td>
+      <td><span class="reason-text" title="${row.reason}">${row.reason}</span></td>
+      <td><span class="badge-status ${statusClass}">${row.status}</span></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+// ===================== VIEW APPLICATION MODAL =====================
+function viewApplication(id) {
+  const row = approvalData.find(r => r.id === id);
+  if (!row) return;
+  currentAppId = id;
+  document.getElementById('appStudentName').textContent  = row.name;
+  document.getElementById('appDept').innerHTML = row.dept === 'CA'
+    ? '<span class="dept-badge-ca">Computer Applications (CA)</span>'
+    : '<span class="dept-badge-ba">Business Administration (BA)</span>';
+  document.getElementById('appClass').textContent     = row.cls;
+  document.getElementById('appLeaveType').textContent = row.type;
+  document.getElementById('appDuration').textContent  = `${row.days} day(s)`;
+  document.getElementById('appDays').textContent      = `${row.days} day(s)`;
+  document.getElementById('appHOD').textContent       = row.hodName;
+  const statusClass = {
+    Pending:'badge-pending', Approved:'badge-approved',
+    Rejected:'badge-rejected', Forwarded:'badge-forwarded'
+  }[row.status] || 'badge-pending';
+  document.getElementById('appStatus').innerHTML = `<span class="badge-status ${statusClass}">${row.status}</span>`;
+  const showActions = row.status === 'Pending';
+  document.getElementById('appApproveBtn').style.display = showActions ? '' : 'none';
+  document.getElementById('appRejectBtn').style.display  = showActions ? '' : 'none';
+  document.getElementById('appModal').classList.add('open');
+}
+function closeAppModal() { document.getElementById('appModal').classList.remove('open'); currentAppId = null; }
+function approveFromModal() { if (currentAppId) { handleApproval(currentAppId, 'Approved'); closeAppModal(); } }
+function rejectFromModal()  { if (currentAppId) { handleApproval(currentAppId, 'Rejected'); closeAppModal(); } }
+document.getElementById('appModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('appModal')) closeAppModal();
+});
+
+// ===================== NOTIFICATION BADGE =====================
+function updateNotifBadge() {
+  const count = approvalData.filter(r => r.status === 'Pending').length;
+  const badge = document.querySelector('.notif-badge');
+  if (badge) badge.textContent = count;
+}
+
+// ===================== TABS =====================
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+  });
+});
+
+// ===================== SETTINGS =====================
+function toggleSettings() {
+  const panel   = document.getElementById('settingsPanel');
+  const overlay = document.getElementById('settingsOverlay');
+  const isOpen  = panel.style.display !== 'none';
+  panel.style.display = isOpen ? 'none' : 'block';
+  overlay.classList.toggle('open', !isOpen);
+  if (!isOpen) showSubPanel('main');
+}
+function closeSettings(e) {
+  if (e.target === document.getElementById('settingsOverlay')) toggleSettings();
+}
+function showSubPanel(name) {
+  document.getElementById('settingsMain').style.display = name === 'main' ? 'block' : 'none';
+  document.getElementById('settingsProfile').classList.toggle('active',       name === 'profile');
+  document.getElementById('settingsPassword').classList.toggle('active',      name === 'password');
+  document.getElementById('settingsNotifications').classList.toggle('active', name === 'notifications');
+}
+function toggleDarkMode(cb) {
+  if (cb.checked) {
+    document.documentElement.style.setProperty('--bg',           '#0f1117');
+    document.documentElement.style.setProperty('--surface',      '#1a1f2e');
+    document.documentElement.style.setProperty('--text',         '#e2e8f0');
+    document.documentElement.style.setProperty('--muted',        '#94a3b8');
+    document.documentElement.style.setProperty('--border',       '#2d3348');
+    document.documentElement.style.setProperty('--primary-light','#1e2a4a');
+    document.documentElement.style.setProperty('--sidebar',      '#0d1020');
+    document.documentElement.style.setProperty('--sidebar-hover','#1a2035');
+    document.body.style.background = '#0f1117';
+    showToast('Dark mode enabled', 'info');
+  } else {
+    document.documentElement.style.setProperty('--bg',           '#f0f2f8');
+    document.documentElement.style.setProperty('--surface',      '#ffffff');
+    document.documentElement.style.setProperty('--text',         '#1a1f36');
+    document.documentElement.style.setProperty('--muted',        '#6b7280');
+    document.documentElement.style.setProperty('--border',       '#e5e8f0');
+    document.documentElement.style.setProperty('--primary-light','#eef0fd');
+    document.documentElement.style.setProperty('--sidebar',      '#1a1f36');
+    document.documentElement.style.setProperty('--sidebar-hover','#252d4a');
+    document.body.style.background = '#f0f2f8';
+    showToast('Light mode enabled', 'info');
+  }
+}
+
+// ===================== SIDEBAR =====================
+document.querySelectorAll('.sidebar-icon').forEach(icon => {
+  icon.addEventListener('click', () => {
+    if (icon.title === 'Settings') { toggleSettings(); return; }
+    document.querySelectorAll('.sidebar-icon').forEach(i => i.classList.remove('active'));
+    icon.classList.add('active');
+  });
+});
+
+// ===================== CHANGE PASSWORD =====================
+document.querySelector('#settingsPassword .settings-save-btn')?.addEventListener('click', async () => {
+  const inputs     = document.querySelectorAll('#settingsPassword .settings-form-input');
+  const currentPwd = inputs[0].value;
+  const newPwd     = inputs[1].value;
+  const confirmPwd = inputs[2].value;
+  if (!currentPwd || !newPwd || !confirmPwd) { showToast('Please fill all fields', 'error'); return; }
+  if (newPwd !== confirmPwd) { showToast('New passwords do not match', 'error'); return; }
+  try {
+    const res = await fetch(`${API}/users/${dirUser.id}/password`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ currentPassword: currentPwd, newPassword: newPwd })
+    });
+    if (!res.ok) { const msg = await res.text(); throw new Error(msg); }
+    showToast('Password updated successfully!', 'success');
+    inputs.forEach(i => i.value = '');
+  } catch (err) {
+    showToast(err.message || 'Password update failed', 'error');
+  }
+});
+
+// ===================== LOGOUT =====================
+document.querySelector('.settings-logout')?.addEventListener('click', () => {
+  localStorage.removeItem('user');
+  window.location.href = 'SignIn.html';
+});
+
+// ===================== NOTIFICATIONS =====================
+document.getElementById('notifBtn').addEventListener('click', () => {
+  const count = approvalData.filter(r => r.status === 'Pending').length;
+  showToast(`${count} application(s) awaiting your decision`, 'info');
+});
+
+// ===================== TOAST =====================
+let toastTimeout;
+function showToast(msg, type = '') {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.className = `toast show ${type}`;
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+// ===================== INIT =====================
+loadAllData();
+
+// Profile panel fill
+document.getElementById('profileName').value  = dirUser.name  || '';
+document.getElementById('profileEmail').value = dirUser.email || '';
+</script>
+</body>
+</html>
