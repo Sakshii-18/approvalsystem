@@ -1,6 +1,26 @@
+// ===================== CLASS OPTIONS PER DEPARTMENT =====================
+
+const caClasses = [
+  "BCA-1 A", "BCA-1 B",
+  "BCA-2 A", "BCA-2 B",
+  "BCA-3 A", "BCA-3 B",
+  "MCA-1 A", "MCA-1 B",
+  "MCA-2 A", "MCA-2 B"
+];
+
+const baClasses = [
+  "BBA-1 A", "BBA-1 B",
+  "BBA-2 A", "BBA-2 B",
+  "BBA-3 A", "BBA-3 B",
+  "MBA-1 A", "MBA-1 B",
+  "MBA-2 A", "MBA-2 B"
+];
+
 // ===================== ROLE TOGGLE (show/hide fields) =====================
 
 const roleSelect  = document.getElementById("role");
+const deptSelect  = document.getElementById("department");
+const deptLabel   = document.getElementById("deptLabel");
 const classSelect = document.getElementById("std");
 const classLabel  = document.getElementById("classLabel");
 const prnInput    = document.getElementById("prn");
@@ -13,10 +33,19 @@ roleSelect.addEventListener("change", function () {
 
   if (role === "Student") {
 
-    // show class and PRN
-    classSelect.style.display = "block";
-    classLabel.style.display  = "block";
-    classSelect.required      = true;
+    // show department first
+    deptSelect.style.display = "block";
+    deptLabel.style.display  = "block";
+    deptSelect.required      = true;
+
+    // reset and hide class until department is chosen
+    classSelect.style.display = "none";
+    classLabel.style.display  = "none";
+    classSelect.required      = false;
+    classSelect.innerHTML     = '<option value="">Select class</option>';
+
+    // reset department selection
+    deptSelect.value = "";
 
     prnInput.style.display = "block";
     prnLabel.style.display = "block";
@@ -27,7 +56,11 @@ roleSelect.addEventListener("change", function () {
 
   } else if (role === "Teacher" || role === "HOD" || role === "Director") {
 
-    // hide class and PRN
+    // hide student fields
+    deptSelect.style.display = "none";
+    deptLabel.style.display  = "none";
+    deptSelect.required      = false;
+
     classSelect.style.display = "none";
     classLabel.style.display  = "none";
     classSelect.required      = false;
@@ -42,13 +75,64 @@ roleSelect.addEventListener("change", function () {
   } else {
 
     // nothing selected — hide everything extra
+    deptSelect.style.display = "none";
+    deptLabel.style.display  = "none";
+    deptSelect.required      = false;
+
     classSelect.style.display = "none";
     classLabel.style.display  = "none";
+    classSelect.required      = false;
 
     prnInput.style.display = "none";
     prnLabel.style.display = "none";
+    prnInput.required      = false;
 
     secretGroup.style.display = "none";
+
+  }
+
+});
+
+// ===================== DEPARTMENT TOGGLE (populate class list) =====================
+
+deptSelect.addEventListener("change", function () {
+
+  const dept = this.value;
+
+  // reset class dropdown
+  classSelect.innerHTML = '<option value="">Select class</option>';
+
+  if (dept === "CA") {
+
+    caClasses.forEach(function (cls) {
+      const opt = document.createElement("option");
+      opt.value = cls;
+      opt.textContent = cls;
+      classSelect.appendChild(opt);
+    });
+
+    classSelect.style.display = "block";
+    classLabel.style.display  = "block";
+    classSelect.required      = true;
+
+  } else if (dept === "BA") {
+
+    baClasses.forEach(function (cls) {
+      const opt = document.createElement("option");
+      opt.value = cls;
+      opt.textContent = cls;
+      classSelect.appendChild(opt);
+    });
+
+    classSelect.style.display = "block";
+    classLabel.style.display  = "block";
+    classSelect.required      = true;
+
+  } else {
+
+    classSelect.style.display = "none";
+    classLabel.style.display  = "none";
+    classSelect.required      = false;
 
   }
 
@@ -64,6 +148,7 @@ document.getElementById("signupForm").addEventListener("submit", function (e) {
   const email      = document.getElementById("email").value;
   const password   = document.getElementById("password").value;
   const role       = document.getElementById("role").value;
+  const department = document.getElementById("department").value;
   const className  = document.getElementById("std").value;
   const prn        = document.getElementById("prn").value;
   const secretCode = document.getElementById("secretCode").value;
@@ -81,6 +166,7 @@ document.getElementById("signupForm").addEventListener("submit", function (e) {
       email:      email,
       password:   password,
       role:       role,
+      department: department,
       className:  className,
       prn:        prn,
       secretCode: secretCode
