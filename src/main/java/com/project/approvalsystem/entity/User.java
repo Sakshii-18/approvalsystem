@@ -20,6 +20,8 @@ public class User {
     private String role;
 
     private String className;
+
+    private String department;
      
     @Column(unique=true)
     private String prn;
@@ -98,5 +100,12 @@ public class User {
 
     public void setSecretCode(String secretCode) {
         this.secretCode = secretCode;
+    }
+    public String getdepartment() {
+        return department;
+    }
+
+    public void setdepartment(String department) {
+        this.department = department;
     }
 }

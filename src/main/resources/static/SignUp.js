@@ -54,9 +54,30 @@ roleSelect.addEventListener("change", function () {
     // hide secret code
     secretGroup.style.display = "none";
 
-  } else if (role === "Teacher" || role === "HOD" || role === "Director") {
+  } else if (role === "HOD") {
 
-    // hide student fields
+    // show department for HOD
+    deptSelect.style.display = "block";
+    deptLabel.style.display  = "block";
+    deptSelect.required      = true;
+    deptSelect.value         = "";
+
+    // hide class and PRN (not needed for HOD)
+    classSelect.style.display = "none";
+    classLabel.style.display  = "none";
+    classSelect.required      = false;
+    classSelect.innerHTML     = '<option value="">Select class</option>';
+
+    prnInput.style.display = "none";
+    prnLabel.style.display = "none";
+    prnInput.required      = false;
+
+    // show secret code
+    secretGroup.style.display = "block";
+
+  } else if (role === "Teacher" || role === "Director") {
+
+    // hide all student fields
     deptSelect.style.display = "none";
     deptLabel.style.display  = "none";
     deptSelect.required      = false;
@@ -98,9 +119,18 @@ roleSelect.addEventListener("change", function () {
 deptSelect.addEventListener("change", function () {
 
   const dept = this.value;
+  const role = roleSelect.value;
 
   // reset class dropdown
   classSelect.innerHTML = '<option value="">Select class</option>';
+
+  // HOD only needs department, not class
+  if (role === "HOD") {
+    classSelect.style.display = "none";
+    classLabel.style.display  = "none";
+    classSelect.required      = false;
+    return;
+  }
 
   if (dept === "CA") {
 
