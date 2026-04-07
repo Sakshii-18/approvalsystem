@@ -643,7 +643,8 @@
             <th>Student Name</th>
             <th>Class</th>
             <th>Leave Type</th>
-            <th>Duration</th>
+            <th>From</th>
+            <th>To</th>
             <th>Days</th>
             <th>Sent By Teacher</th>
             <th>Status</th>
@@ -664,13 +665,10 @@
         </div>
         <div style="display:flex;gap:6px;align-items:center" id="classFilterWrap">
           <span style="font-size:12px;color:var(--muted);margin-right:4px">Filter:</span>
-          <button class="class-pill active" onclick="selectClass('all',this)">All Classes</button>
-          <button class="class-pill" onclick="selectClass('CS-A FY',this)">CS-A FY</button>
-          <button class="class-pill" onclick="selectClass('CS-B FY',this)">CS-B FY</button>
-          <button class="class-pill" onclick="selectClass('CS-A SY',this)">CS-A SY</button>
-          <button class="class-pill" onclick="selectClass('CS-B SY',this)">CS-B SY</button>
-          <button class="class-pill" onclick="selectClass('CS-A TY',this)">CS-A TY</button>
-          <button class="class-pill" onclick="selectClass('CS-B TY',this)">CS-B TY</button>
+          <button class="class-pill active" onclick="selectHistoryYear('all',this)">All Classes</button>
+          <button class="class-pill" onclick="selectHistoryYear('FY',this)">FY</button>
+          <button class="class-pill" onclick="selectHistoryYear('SY',this)">SY</button>
+          <button class="class-pill" onclick="selectHistoryYear('TY',this)">TY</button>
         </div>
       </div>
 
@@ -683,11 +681,10 @@
           <tr>
             <th>Student Name</th>
             <th>Class</th>
-            <th>Leave Type</th>
+            <th>Reason</th>
             <th>From</th>
             <th>To</th>
             <th>Days</th>
-            <th>Reason</th>
             <th>Status</th>
           </tr>
         </thead>

@@ -32,7 +32,7 @@ public class User {
     }
 
     public User(String name, String email, String password, String role,
-                String className, String prn, String secretCode) {
+                String className, String prn, String secretCode ,String department ) {
         this.name = name;
         this.email = email;
         this.password = password;
@@ -40,6 +40,7 @@ public class User {
         this.className = className;
         this.prn = prn;
         this.secretCode = secretCode;
+        this.department= department;
     }
 
     public Long getId() {
@@ -101,11 +102,11 @@ public class User {
     public void setSecretCode(String secretCode) {
         this.secretCode = secretCode;
     }
-    public String getdepartment() {
+    public String getDepartment() {
         return department;
     }
 
-    public void setdepartment(String department) {
+    public void setDepartment(String department) {
         this.department = department;
     }
 }

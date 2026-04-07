@@ -123,12 +123,23 @@ public class LeaveController {
                     );
 
                 } else {
+
+
                     leave.setStatus("PENDING_HOD");
                     leave.setAction("FORWARDED_TO_HOD");
                     leaveRepository.save(leave);
 
-                    List<User> hods = userRepository.findByRole("HOD");
-                    User hod = hods.isEmpty() ? null : hods.get(0);
+                       // Pick HOD based on student's department (CA or BA)
+                    String studentDept = leave.getUser() != null ? leave.getUser().getDepartment() : null;
+                    User hod = (studentDept != null && !studentDept.isEmpty())
+                                ? userRepository.findByRoleAndDepartment("HOD", studentDept)
+                                : userRepository.findByRole("HOD").stream().findFirst().orElse(null);
+                    //leave.setStatus("PENDING_HOD");
+                    //leave.setAction("FORWARDED_TO_HOD");
+                   // leaveRepository.save(leave);
+
+                   // List<User> hods = userRepository.findByRole("HOD");
+                   // User hod = hods.isEmpty() ? null : hods.get(0);
 
                     saveNotif(student, "🔄", "#eef0ff",
                             "Leave approved by Teacher — forwarded to HOD",
@@ -154,8 +165,15 @@ public class LeaveController {
                     leave.setAction("APPROVED");
                     leaveRepository.save(leave);
 
-                    List<User> hods = userRepository.findByRole("HOD");
-                    String hodName  = hods.isEmpty() ? "HOD" : hods.get(0).getName();
+
+                    String studentDept = leave.getUser() != null ? leave.getUser().getDepartment() : null;
+                    User hodUser = (studentDept != null && !studentDept.isEmpty())
+                                   ? userRepository.findByRoleAndDepartment("HOD", studentDept)
+                                   : userRepository.findByRole("HOD").stream().findFirst().orElse(null);
+                    String hodName = hodUser != null ? hodUser.getName() : "HOD";
+
+                    //List<User> hods = userRepository.findByRole("HOD");
+                    //String hodName  = hods.isEmpty() ? "HOD" : hods.get(0).getName();
 
                     saveNotif(student, "✅", "#dcfce7",
                             "Leave fully approved by HOD",
@@ -171,9 +189,16 @@ public class LeaveController {
                     leave.setAction("FORWARDED_TO_DIRECTOR");
                     leaveRepository.save(leave);
 
-                    List<User> hods      = userRepository.findByRole("HOD");
+
+                    String studentDept = leave.getUser() != null ? leave.getUser().getDepartment() : null;
+                    User hodUser = (studentDept != null && !studentDept.isEmpty())
+                                   ? userRepository.findByRoleAndDepartment("HOD", studentDept)
+                                   : userRepository.findByRole("HOD").stream().findFirst().orElse(null);
+                    String hodName = hodUser != null ? hodUser.getName() : "HOD";
+
+                    //List<User> hods      = userRepository.findByRole("HOD");
                     List<User> directors = userRepository.findByRole("Director");
-                    String hodName       = hods.isEmpty() ? "HOD" : hods.get(0).getName();
+                    //String hodName       = hods.isEmpty() ? "HOD" : hods.get(0).getName();
                     User director        = directors.isEmpty() ? null : directors.get(0);
 
                     saveNotif(student, "🔄", "#eef0ff",
@@ -305,5 +330,12 @@ public class LeaveController {
     @GetMapping("/teachers")
     public List<User> getTeachers() {
         return userRepository.findByRole("Teacher");
+
     }
+
+    // ===================== GET LEAVES BY DEPARTMENT =====================
+      @GetMapping("/department/{dept}")
+public List<LeaveRequest> getLeavesByDepartment(@PathVariable String dept) {
+    return leaveRepository.findByUser_Department(dept);
+}
 }

@@ -3,6 +3,7 @@ package com.project.approvalsystem.entity;
 import jakarta.persistence.*;
 
 @Entity
+
 public class LeaveRequest {
 
     @Id
@@ -27,6 +28,10 @@ public class LeaveRequest {
     // Action column — tracks what action was last taken
     // Values: APPLIED, CANCELLED, APPROVED, REJECTED
     private String action;
+
+
+    private String startDate;
+    private String endDate;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
@@ -57,4 +62,13 @@ public class LeaveRequest {
 
     public User getTeacher() { return teacher; }
     public void setTeacher(User teacher) { this.teacher = teacher; }
+
+
+    public String getStartDate() { return startDate; }
+    public void setStartDate(String startDate) { this.startDate = startDate; }
+
+    public String getEndDate() { return endDate; }
+    public void setEndDate(String endDate) { this.endDate = endDate; }
+
+
 }

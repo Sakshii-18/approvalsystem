@@ -13,4 +13,6 @@ public interface LeaveRepository extends JpaRepository<LeaveRequest, Long> {
 
     List<LeaveRequest> findByTeacherId(Long teacherId);
 
+    List<LeaveRequest> findByUser_Department(String department);
+
 }

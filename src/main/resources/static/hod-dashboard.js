@@ -25,15 +25,22 @@ let currentAppId  = null;
 // ===================== FETCH ALL LEAVES FROM BACKEND =====================
 async function loadAllData() {
   try {
-    const res = await fetch(`${API}/leave`);
+
+    const dept = hodUser.department || hodUser.Department || '';
+    const url  = dept ? `${API}/leave/department/${dept}` : `${API}/leave`;
+    const res  = await fetch(url);
     if (!res.ok) throw new Error('Server error');
     const all = await res.json();
+    //const res = await fetch(`${API}/leave`);
+    //if (!res.ok) throw new Error('Server error');
+    //const all = await res.json();
 
     // HOD sees only leaves with status PENDING_HOD
     approvalData  = all.filter(l => l.status === 'PENDING_HOD').map(mapLeave);
 
     // History = all leaves that have passed teacher level (days > 3)
-    allLeavesData = all.filter(l => l.days > 3).map(mapLeave);
+    allLeavesData = all.filter(l => l.days > 5).map(mapLeave);
+    //allLeavesData = all.map(mapLeave);
 
     renderBannerStats(all);
     renderDeptStats(all);
@@ -55,9 +62,11 @@ function mapLeave(l) {
     cls:        l.user?.className || '—',
     reason:     l.reason          || '—',
     days:       l.days,
+    startDate:  l.startDate       || '—',
+    endDate:    l.endDate         || '—',
     status:     mapStatus(l.status),
     rawStatus:  l.status,
-    approvedBy: l.teacher?.name   || '—',   // ← FIXED: use teacher name not teacherId
+    approvedBy: l.teacher?.name   || '—',
   };
 }
 
@@ -128,14 +137,19 @@ function renderApprovalTable() {
   if (!tbody) return;
   tbody.innerHTML = '';
 
-  // ← FIXED: filter by status not by cls
+  // FY = 1st year classes, SY = 2nd year, TY = 3rd year
+  function matchesYear(cls, yr) {
+    const c = (cls || '').toUpperCase();
+    if (yr === 'FY') return c.includes('-1');
+    if (yr === 'SY') return c.includes('-2');
+    if (yr === 'TY') return c.includes('-3');
+    return true;
+  }
   const filtered = activeFilter === 'all'
     ? approvalData
-    : activeFilter === 'Pending'
-      ? approvalData.filter(r => r.rawStatus === 'PENDING_HOD')
-      : activeFilter === 'Approved'
-        ? approvalData.filter(r => r.rawStatus.startsWith('APPROVED'))
-        : approvalData.filter(r => r.rawStatus === 'REJECTED' || r.rawStatus === 'CANCELLED');
+    : (activeFilter === 'FY' || activeFilter === 'SY' || activeFilter === 'TY')
+      ? approvalData.filter(r => matchesYear(r.cls, activeFilter))
+      : approvalData;
 
   const pending = approvalData.filter(r => r.rawStatus === 'PENDING_HOD').length;
   const pendingCountEl = document.getElementById('pendingCount');
@@ -144,7 +158,7 @@ function renderApprovalTable() {
   if (bannerPendingEl) bannerPendingEl.textContent = pending;
 
   if (filtered.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:32px;color:var(--muted)">🎉 No leave requests found</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:32px;color:var(--muted)">🎉 No leave requests found</td></tr>`;
     return;
   }
 
@@ -161,6 +175,8 @@ function renderApprovalTable() {
       <td><strong>${row.name}</strong></td>
       <td><span class="class-badge">${row.cls}</span></td>
       <td>${row.reason}</td>
+      <td style="font-size:12px">${row.startDate}</td>
+      <td style="font-size:12px">${row.endDate}</td>
       <td style="text-align:center;font-weight:700">${row.days}</td>
       <td>
         <div class="teacher-ref">
@@ -254,8 +270,7 @@ function renderClassSnapshot() {
   const container = document.getElementById('classSnapshot');
   if (!container) return;
 
-  const data = activeClass === 'all' ? allLeavesData
-    : allLeavesData.filter(r => r.cls === activeClass);
+  const data = allLeavesData.filter(r => matchesHistoryYear(r.cls, activeHistoryYear));
 
   const total    = data.length;
   const approved = data.filter(r => r.rawStatus.startsWith('APPROVED')).length;
@@ -285,13 +300,30 @@ function renderClassSnapshot() {
 }
 
 // ===================== CLASS HISTORY =====================
+let activeHistoryYear = 'all';
+
+function selectHistoryYear(yr, btn) {
+  activeHistoryYear = yr;
+  document.querySelectorAll('.class-pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  renderClassSnapshot();
+  renderClassHistory();
+}
+
+function matchesHistoryYear(cls, yr) {
+  const c = (cls || '').toUpperCase();
+  if (yr === 'FY') return c.includes('-1');
+  if (yr === 'SY') return c.includes('-2');
+  if (yr === 'TY') return c.includes('-3');
+  return true;
+}
+
 function renderClassHistory() {
-  const tbody = document.getElementById('historyTable');
-  const empty = document.getElementById('historyEmpty');
+  const tbody = document.getElementById('classHistoryTable');
+  const empty = document.getElementById('classEmptyState');
   if (!tbody) return;
 
-  const data = activeClass === 'all' ? allLeavesData
-    : allLeavesData.filter(r => r.cls === activeClass);
+  const data = allLeavesData.filter(r => matchesHistoryYear(r.cls, activeHistoryYear));
 
   tbody.innerHTML = '';
   if (data.length === 0) {
@@ -309,7 +341,9 @@ function renderClassHistory() {
     tr.innerHTML = `
       <td><strong>${row.name}</strong></td>
       <td><span class="class-badge">${row.cls}</span></td>
-      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${row.reason}</td>
+      <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${row.reason}</td>
+      <td style="font-size:12px">${row.startDate}</td>
+      <td style="font-size:12px">${row.endDate}</td>
       <td style="text-align:center;font-weight:700">${row.days}</td>
       <td><span class="badge-status ${statusClass}">${row.status}</span></td>
     `;

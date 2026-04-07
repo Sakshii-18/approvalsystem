@@ -236,8 +236,11 @@ document.getElementById("submitLeave").addEventListener("click", async () => {
   const leaveData = {
     reason,
     days,
+    startDate:  start,   // added this
+    endDate:    end,     // added this
     teacher: { id: parseInt(teacherId) },
-    user:    { id: user.id },
+    user:       { id: user.id },
+    department: user.department || "",
   };
 
   try {
